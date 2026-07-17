@@ -107,6 +107,15 @@
 #dp-clear{background:#eee;color:#333;}
 #dp-cancel{background:#ddd;color:#333;}
 #dp-set{background:var(--red);color:#fff;}
+#vax-banner{position:absolute;top:8px;left:8px;right:8px;z-index:7;display:none;border-radius:10px;
+  padding:10px 34px 10px 12px;font-size:13px;font-weight:600;color:#111;box-shadow:0 3px 14px rgba(0,0,0,0.5);}
+#vax-banner.warn{display:block;background:#fff3cd;border:1px solid #d4b106;}
+#vax-banner.red{display:block;background:#fdeaea;border:1px solid #c00000;color:#7a0000;}
+#vax-banner b{display:block;margin-bottom:2px;}
+#vax-banner-x{position:absolute;top:4px;right:6px;background:none;border:none;font-size:20px;line-height:1;color:inherit;padding:4px;}
+#imm-ics{display:block;width:100%;margin-top:10px;height:40px;border:none;border-radius:8px;background:var(--red);
+  color:#fff;font-size:14px;font-weight:700;}
+#imm-ics:disabled{background:#ccc;color:#666;}
 .imm-exp-cell{text-align:center;font-weight:700;white-space:nowrap;}
 tr.imm-ok td{background:#e6f4ea;}
 tr.imm-warn td{background:#fff6d6;}
@@ -168,6 +177,7 @@ tr.imm-red td{background:#fdeaea;color:#a00000;}
   <div id="stage">
     <img id="page-img" alt="FOG page" draggable="false">
     <div id="link-layer"></div>
+    <div id="vax-banner" onclick="openImm()"><span id="vax-banner-txt"></span><button id="vax-banner-x" onclick="event.stopPropagation();hideVaxBanner()">&#215;</button></div>
     <div id="edge-l" onclick="prevPage()"></div>
     <div id="edge-r" onclick="nextPage()"></div>
   </div>
@@ -214,11 +224,12 @@ tr.imm-red td{background:#fdeaea;color:#a00000;}
         <tr><th style="width:44%;">Vaccine</th><th style="width:28%;">Administered</th><th style="width:28%;">Expiry</th></tr>
         <tbody id="imm-rows"></tbody>
       </table>
+      <button id="imm-ics" onclick="immIcs()">&#128197; Add expiry reminders to Calendar</button>
       <div id="imm-note"><b>GREEN</b> = current &nbsp;<b>YELLOW</b> = expires within 6 months &nbsp;<b>RED</b> = expired.
       Expiry calculates automatically from the booster intervals in the 2025 AUSMAT Immunisation Requirements
       (DTP 5yr, Influenza 1yr, Dukoral 2yr, Vaxchora 6mth, Imojev 5yr, JEspect 2yr, Polio 10yr, Typhoid 3yr inj/oral-3 or 5yr oral-4).
       Hep A, Hep B, MMR, Varicella and Rabies are lifelong once dosed (Hep B and Rabies subject to serological proof of immunity).
-      COVID-19 has no fixed expiry (ATAGI age/risk based).</div>
+      COVID-19 is recorded as lifelong (no fixed booster interval; ATAGI age/risk based).</div>
     </div>
   </div>
 </div>
@@ -561,7 +572,7 @@ function immRefresh(){
     if(!adm) btn.classList.add('empty');
     var exp='';
     if(adm){ exp=(mths===0)?'LL':isoAddMonths(adm,mths); }
-    expCell.textContent = exp ? (exp==='LL' ? (k==='covid'?'No exp':'Lifelong') : fmtDMY(exp)) : '\u2014';
+    expCell.textContent = exp ? (exp==='LL' ? 'Lifelong' : fmtDMY(exp)) : '\u2014';
     if(exp==='LL'){ tr.className='imm-ok'; }
     else if(exp){
       if(exp<today) tr.className='imm-red';
@@ -583,7 +594,7 @@ function immRefresh(){
   tb.innerHTML=html;
   immRefresh();
 })();
-function openImm(){ document.getElementById('imm-modal').classList.add('open'); immRefresh(); }
+function openImm(){ document.getElementById('imm-modal').classList.add('open'); immRefresh(); hideVaxBanner(); }
 function closeImm(){ document.getElementById('imm-modal').classList.remove('open'); }
 /* ---------- one-popup day/month/year picker ---------- */
 var dpKey=null;
@@ -619,12 +630,61 @@ function dpSet(){
       m=('0'+document.getElementById('dp-m').value).slice(-2),
       d=('0'+document.getElementById('dp-d').value).slice(-2);
   var o=immLoad(); o[dpKey]=o[dpKey]||{}; o[dpKey].adm=y+'-'+m+'-'+d; immSave(o);
-  dpCancel(); immRefresh();
+  dpCancel(); immRefresh(); showVaxBanner();
 }
 function dpClear(){
   if(!dpKey) return dpCancel();
   var o=immLoad(); if(o[dpKey]) delete o[dpKey].adm; immSave(o);
   dpCancel(); immRefresh();
+}
+/* ---------- expiry statuses, launch banner, calendar export ---------- */
+function immStatuses(){
+  var saved=immLoad(), today=isoToday(), warn6=isoAddMonths(today,6);
+  var red=[], warn=[];
+  for(var i=0;i<IMMUN.length;i++){
+    var k=IMMUN[i][0], mths=IMMUN[i][2];
+    var adm=(saved[k]&&saved[k].adm)||'';
+    if(!adm || mths===0) continue;
+    var exp=isoAddMonths(adm,mths);
+    var item={k:k,name:IMMUN[i][1],exp:exp};
+    if(exp<today) red.push(item);
+    else if(exp<warn6) warn.push(item);
+  }
+  return {red:red,warn:warn};
+}
+function hideVaxBanner(){ var b=document.getElementById('vax-banner'); if(b) b.className=''; }
+function showVaxBanner(){
+  var b=document.getElementById('vax-banner'); if(!b) return;
+  var s=immStatuses();
+  if(!s.red.length && !s.warn.length){ b.className=''; return; }
+  var t='';
+  if(s.red.length) t+='<b>&#9888; '+s.red.length+' vaccination'+(s.red.length>1?'s':'')+' EXPIRED: '+s.red.map(function(x){return x.name;}).join(', ')+'</b>';
+  if(s.warn.length) t+=(s.red.length?'Expiring soon: ':'<b>&#9888; Vaccinations expiring soon</b>')+s.warn.map(function(x){return x.name+' ('+fmtDMY(x.exp)+')';}).join(', ');
+  t+=' &mdash; tap to open tracker';
+  document.getElementById('vax-banner-txt').innerHTML=t;
+  b.className=s.red.length?'red':'warn';
+}
+function icsDate(iso){ return iso.replace(/-/g,''); }
+function immIcs(){
+  var saved=immLoad(), today=isoToday();
+  var ev=[];
+  for(var i=0;i<IMMUN.length;i++){
+    var k=IMMUN[i][0], mths=IMMUN[i][2];
+    var adm=(saved[k]&&saved[k].adm)||'';
+    if(!adm || mths===0) continue;
+    var exp=isoAddMonths(adm,mths);
+    var rem=isoAddMonths(exp,-1);       /* remind 1 month before expiry */
+    if(rem<today) rem=today;
+    ev.push('BEGIN:VEVENT\r\nUID:fog-vax-'+k+'-'+icsDate(exp)+'@dartfog\r\nDTSTAMP:'+icsDate(isoToday())+'T000000Z\r\nDTSTART;VALUE=DATE:'+icsDate(rem)+'\r\nSUMMARY:Vaccination due: '+IMMUN[i][1]+' (expires '+fmtDMY(exp)+')\r\nDESCRIPTION:Booster required before '+fmtDMY(exp)+'. DART FOG immunisation tracker.\r\nBEGIN:VALARM\r\nTRIGGER:PT9H\r\nACTION:DISPLAY\r\nDESCRIPTION:Vaccination due\r\nEND:VALARM\r\nEND:VEVENT');
+  }
+  if(!ev.length){ alert('No dated vaccinations with an expiry yet.'); return; }
+  var ics='BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//DART FOG//Immunisation//EN\r\n'+ev.join('\r\n')+'\r\nEND:VCALENDAR\r\n';
+  var blob=new Blob([ics],{type:'text/calendar'});
+  var u=URL.createObjectURL(blob);
+  var aEl=document.createElement('a');
+  aEl.href=u; aEl.download='vaccination_reminders.ics';
+  document.body.appendChild(aEl); aEl.click();
+  setTimeout(function(){ document.body.removeChild(aEl); URL.revokeObjectURL(u); },2000);
 }
 document.getElementById('dp-m').addEventListener('change',dpRebuildDays);
 document.getElementById('dp-y').addEventListener('change',dpRebuildDays);
@@ -887,6 +947,7 @@ function copyShareUrl(){
 showPage(1);
 
 /* ---------- offline: service worker ---------- */
+showVaxBanner();
 if('serviceWorker' in navigator && location.protocol==='https:'){
   navigator.serviceWorker.register('sw.js').catch(function(){});
 }
