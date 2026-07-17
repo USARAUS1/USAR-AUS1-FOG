@@ -91,10 +91,22 @@
 .imm-table th{border:1px solid #555;padding:6px 4px;background:#222;color:#fff;font-size:11.5px;}
 .imm-table td{border:1px solid #555;padding:5px 4px;vertical-align:middle;}
 .imm-table td:first-child{font-weight:600;font-size:12px;}
-.imm-table input[type=date]{display:block;width:100%;height:32px;min-height:32px;box-sizing:border-box;
-  border:1px solid #8aa6c9;border-radius:5px;background:#fff;font-size:14px;font-weight:600;color:#000;
-  padding:2px 5px;outline:none;-webkit-appearance:none;appearance:none;text-align:center;}
-.imm-table input[type=date]:empty{color:#666;}
+.imm-datebtn{display:block;width:100%;height:32px;box-sizing:border-box;border:1px solid #8aa6c9;border-radius:5px;
+  background:#fff;font-size:13px;font-weight:700;color:#000;text-align:center;white-space:nowrap;padding:0 2px;}
+.imm-datebtn.empty{color:#777;font-weight:600;}
+.imm-datebtn.na{background:#eee;border-color:#bbb;color:#888;pointer-events:none;}
+.imm-table td{white-space:nowrap;}
+#dp-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;align-items:center;justify-content:center;padding:16px;}
+#dp-modal.open{display:flex;}
+#dp-box{background:#fff;border-radius:12px;width:min(94vw,340px);padding:14px;box-shadow:0 8px 40px rgba(0,0,0,0.8);color:#000;}
+#dp-title{font-size:14px;font-weight:700;margin-bottom:10px;text-align:center;}
+#dp-row{display:flex;gap:8px;}
+#dp-row select{flex:1;height:44px;font-size:16px;font-weight:600;border:1px solid #8aa6c9;border-radius:6px;background:#f4f8ff;text-align:center;}
+#dp-btns{display:flex;gap:8px;margin-top:12px;}
+#dp-btns button{flex:1;height:40px;border:none;border-radius:8px;font-size:14px;font-weight:700;}
+#dp-clear{background:#eee;color:#333;}
+#dp-cancel{background:#ddd;color:#333;}
+#dp-set{background:var(--red);color:#fff;}
 .imm-exp-cell{text-align:center;font-weight:700;white-space:nowrap;}
 tr.imm-ok td{background:#e6f4ea;}
 tr.imm-warn td{background:#fff6d6;}
@@ -175,6 +187,22 @@ tr.imm-red td{background:#fdeaea;color:#a00000;}
 </div>
 
 <!-- Calculator modal (ported verbatim) -->
+<div id="dp-modal" onclick="if(event.target===this)dpCancel()">
+  <div id="dp-box">
+    <div id="dp-title">Select date</div>
+    <div id="dp-row">
+      <select id="dp-d"></select>
+      <select id="dp-m"></select>
+      <select id="dp-y"></select>
+    </div>
+    <div id="dp-btns">
+      <button id="dp-clear" onclick="dpClear()">Clear</button>
+      <button id="dp-cancel" onclick="dpCancel()">Cancel</button>
+      <button id="dp-set" onclick="dpSet()">Set</button>
+    </div>
+  </div>
+</div>
+
 <div id="imm-modal" onclick="if(event.target===this)closeImm()">
   <div id="imm-box">
     <div id="calc-hdr">
@@ -494,6 +522,7 @@ var IMMUN=[
  ['ty3','Typhoid (inj or oral 3-dose)',36],
  ['ty4','Typhoid (oral 4-dose)',60]
 ];
+var IMM_PAIRS=[['duk','vaxc'],['imo','jes'],['ty3','ty4']];
 function immLoad(){ try{ return JSON.parse(localStorage.getItem('fogImmun')||'{}'); }catch(e){ return {}; } }
 function immSave(o){ try{ localStorage.setItem('fogImmun', JSON.stringify(o)); }catch(e){} }
 function isoToday(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
@@ -504,19 +533,36 @@ function isoAddMonths(iso,m){ /* EDATE: clamp to last day of target month */
   return t.getFullYear()+'-'+('0'+(t.getMonth()+1)).slice(-2)+'-'+('0'+t.getDate()).slice(-2);
 }
 function fmtDMY(iso){ var p=iso.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; }
+function immPartner(k){
+  for(var i=0;i<IMM_PAIRS.length;i++){
+    if(IMM_PAIRS[i][0]===k) return IMM_PAIRS[i][1];
+    if(IMM_PAIRS[i][1]===k) return IMM_PAIRS[i][0];
+  }
+  return null;
+}
+function immName(k){ for(var i=0;i<IMMUN.length;i++) if(IMMUN[i][0]===k) return IMMUN[i][1]; return ''; }
 function immRefresh(){
   var saved=immLoad(), today=isoToday(), warn=isoAddMonths(today,6);
   for(var i=0;i<IMMUN.length;i++){
     var k=IMMUN[i][0], mths=IMMUN[i][2];
     var tr=document.getElementById('imr-'+k);
-    var adm=(saved[k]&&saved[k].adm)||'';
+    var btn=document.getElementById('ima-'+k);
     var expCell=document.getElementById('ime-'+k);
+    var adm=(saved[k]&&saved[k].adm)||'';
+    var pk=immPartner(k);
+    var partnerDosed = pk && !adm && !!(saved[pk]&&saved[pk].adm);
+    tr.className=''; btn.className='imm-datebtn';
+    if(partnerDosed){
+      btn.textContent='NA'; btn.classList.add('na');
+      expCell.textContent='NA';
+      continue;
+    }
+    btn.textContent = adm ? fmtDMY(adm) : 'Set date';
+    if(!adm) btn.classList.add('empty');
     var exp='';
-    if(adm){ exp=(mths===0)?'Lifelong':isoAddMonths(adm,mths); }
-    var label = exp ? (exp==='Lifelong' ? (k==='covid'?'No exp':'Lifelong') : fmtDMY(exp)) : '\u2014';
-    expCell.textContent = label;
-    tr.className='';
-    if(exp==='Lifelong'){ tr.className='imm-ok'; }
+    if(adm){ exp=(mths===0)?'LL':isoAddMonths(adm,mths); }
+    expCell.textContent = exp ? (exp==='LL' ? (k==='covid'?'No exp':'Lifelong') : fmtDMY(exp)) : '\u2014';
+    if(exp==='LL'){ tr.className='imm-ok'; }
     else if(exp){
       if(exp<today) tr.className='imm-red';
       else if(exp<warn) tr.className='imm-warn';
@@ -527,27 +573,61 @@ function immRefresh(){
 (function buildImm(){
   var tb=document.getElementById('imm-rows');
   if(!tb) return;
-  var saved=immLoad(), html='';
+  var html='';
   for(var i=0;i<IMMUN.length;i++){
-    var k=IMMUN[i][0], nm=IMMUN[i][1], mths=IMMUN[i][2];
-    var adm=(saved[k]&&saved[k].adm)||'';
+    var k=IMMUN[i][0], nm=IMMUN[i][1];
     html+='<tr id="imr-'+k+'"><td>'+nm+'</td>'+
-      '<td><input type="date" id="ima-'+k+'" value="'+adm+'"></td>'+
-      '<td class="imm-exp-cell" id="ime-'+k+'">\u2014</td>'+
-      '</tr>';
+      '<td><button type="button" class="imm-datebtn" id="ima-'+k+'" onclick="dpOpen(\''+k+'\')">Set date</button></td>'+
+      '<td class="imm-exp-cell" id="ime-'+k+'">\u2014</td></tr>';
   }
   tb.innerHTML=html;
-  for(var j=0;j<IMMUN.length;j++){
-    (function(k,mths){
-      function admUpd(){ var o=immLoad(); o[k]=o[k]||{}; o[k].adm=this.value; immSave(o); immRefresh(); }
-      var ai=document.getElementById('ima-'+k);
-      ai.addEventListener('change',admUpd); ai.addEventListener('input',admUpd);
-    })(IMMUN[j][0],IMMUN[j][2]);
-  }
   immRefresh();
 })();
 function openImm(){ document.getElementById('imm-modal').classList.add('open'); immRefresh(); }
 function closeImm(){ document.getElementById('imm-modal').classList.remove('open'); }
+/* ---------- one-popup day/month/year picker ---------- */
+var dpKey=null;
+var DP_MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function dpDaysIn(y,m){ return new Date(y,m,0).getDate(); }
+function dpRebuildDays(){
+  var y=+document.getElementById('dp-y').value, m=+document.getElementById('dp-m').value;
+  var sel=document.getElementById('dp-d'), cur=+sel.value||1, n=dpDaysIn(y,m), o='';
+  for(var d=1;d<=n;d++) o+='<option value="'+d+'">'+('0'+d).slice(-2)+'</option>';
+  sel.innerHTML=o; sel.value=Math.min(cur,n);
+}
+function dpOpen(k){
+  dpKey=k;
+  document.getElementById('dp-title').textContent=immName(k)+' \u2014 date administered';
+  var saved=immLoad(), adm=(saved[k]&&saved[k].adm)||isoToday();
+  var p=adm.split('-'), y=+p[0], m=+p[1], d=+p[2];
+  var nowY=new Date().getFullYear(), yo='';
+  for(var yy=nowY; yy>=nowY-30; yy--) yo+='<option value="'+yy+'">'+yy+'</option>';
+  document.getElementById('dp-y').innerHTML=yo;
+  var mo='';
+  for(var mm=1;mm<=12;mm++) mo+='<option value="'+mm+'">'+DP_MONTHS[mm-1]+'</option>';
+  document.getElementById('dp-m').innerHTML=mo;
+  document.getElementById('dp-y').value=Math.min(Math.max(y,nowY-30),nowY);
+  document.getElementById('dp-m').value=m;
+  dpRebuildDays();
+  document.getElementById('dp-d').value=d;
+  document.getElementById('dp-modal').classList.add('open');
+}
+function dpCancel(){ document.getElementById('dp-modal').classList.remove('open'); dpKey=null; }
+function dpSet(){
+  if(!dpKey) return dpCancel();
+  var y=document.getElementById('dp-y').value,
+      m=('0'+document.getElementById('dp-m').value).slice(-2),
+      d=('0'+document.getElementById('dp-d').value).slice(-2);
+  var o=immLoad(); o[dpKey]=o[dpKey]||{}; o[dpKey].adm=y+'-'+m+'-'+d; immSave(o);
+  dpCancel(); immRefresh();
+}
+function dpClear(){
+  if(!dpKey) return dpCancel();
+  var o=immLoad(); if(o[dpKey]) delete o[dpKey].adm; immSave(o);
+  dpCancel(); immRefresh();
+}
+document.getElementById('dp-m').addEventListener('change',dpRebuildDays);
+document.getElementById('dp-y').addEventListener('change',dpRebuildDays);
 function goHome(){ showPage(7); closeToc(); }
 function prevPage(){ if(cur>1) showPage(cur-1); }
 function nextPage(){ if(cur<TOTAL) showPage(cur+1); }
