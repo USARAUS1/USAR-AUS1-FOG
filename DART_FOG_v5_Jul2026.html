@@ -44,11 +44,6 @@
   #edge-l,#edge-r{position:absolute;top:0;bottom:0;width:16%;z-index:5;}
 #link-layer{position:absolute;pointer-events:none;transform-origin:center center;z-index:6;display:none;}
 .plink{position:absolute;pointer-events:auto;-webkit-tap-highlight-color:rgba(11,94,215,.18);}
-#form-layer{position:absolute;pointer-events:none;transform-origin:center center;z-index:6;display:none;}
-.vaxd{position:absolute;pointer-events:auto;box-sizing:border-box;border:1px solid #8aa6c9;border-radius:3px;
-  background:#eef4ff;color:#111;font-size:10px;padding:0 2px;-webkit-appearance:none;appearance:none;}
-.vaxd.past{color:#c00000;border-color:#c00000;background:#ffecec;font-weight:700;}
-.vaxd.future{color:#0a7a2f;border-color:#0a7a2f;background:#eaf7ee;font-weight:700;}
   #edge-l{left:0;}#edge-r{right:0;}
   /* bottom nav */
   #bottom-nav{flex-shrink:0;background:#111;border-top:1px solid #333;display:flex;
@@ -88,6 +83,25 @@
   #calc-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:flex-start;justify-content:center;padding:max(var(--safe-top),8px) 8px 20px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
   #calc-modal.open{display:flex;}
   #calc-box{background:#fff;border-radius:12px;width:min(98vw,480px);overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.8);color:#000;}
+#imm-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:flex-start;justify-content:center;padding:max(var(--safe-top),8px) 8px 20px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+#imm-modal.open{display:flex;}
+#imm-box{background:#fff;border-radius:12px;width:min(98vw,480px);overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.8);color:#000;}
+#imm-body{padding:12px;}
+.imm-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+.imm-table th{border:1px solid #555;padding:6px 4px;background:#222;color:#fff;font-size:11.5px;}
+.imm-table td{border:1px solid #555;padding:5px 4px;vertical-align:middle;}
+.imm-table td:first-child{font-weight:600;font-size:12px;}
+.imm-table input[type=date]{display:block;width:100%;height:32px;min-height:32px;box-sizing:border-box;
+  border:1px solid #8aa6c9;border-radius:5px;background:#fff;font-size:14px;font-weight:600;color:#000;
+  padding:2px 5px;outline:none;-webkit-appearance:none;appearance:none;text-align:center;}
+.imm-table input[type=date]:empty{color:#666;}
+.imm-exp-cell{text-align:center;font-weight:700;white-space:nowrap;}
+tr.imm-ok td{background:#e6f4ea;}
+tr.imm-warn td{background:#fff6d6;}
+tr.imm-red td{background:#fdeaea;color:#a00000;}
+#imm-note{font-size:11px;color:#333;margin-top:10px;line-height:1.45;}
+.imm-openpill{position:absolute;left:50%;transform:translateX(-50%);bottom:4%;background:rgba(11,94,215,0.92);color:#fff;font-weight:700;font-size:11px;border-radius:14px;padding:5px 12px;pointer-events:none;white-space:nowrap;}
+.plink.imm-zone{border:2px dashed rgba(11,94,215,0.55);border-radius:8px;}
   #calc-hdr{background:#222;color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;}
 #calc-pgno{background:var(--red);color:#fff;font-size:13px;font-weight:700;border-radius:8px;padding:4px 8px;margin-right:10px;flex-shrink:0;}
   #calc-hdr h2{font-size:14px;font-weight:bold;letter-spacing:0.5px;}
@@ -142,7 +156,6 @@
   <div id="stage">
     <img id="page-img" alt="FOG page" draggable="false">
     <div id="link-layer"></div>
-    <div id="form-layer"></div>
     <div id="edge-l" onclick="prevPage()"></div>
     <div id="edge-r" onclick="nextPage()"></div>
   </div>
@@ -162,6 +175,26 @@
 </div>
 
 <!-- Calculator modal (ported verbatim) -->
+<div id="imm-modal" onclick="if(event.target===this)closeImm()">
+  <div id="imm-box">
+    <div id="calc-hdr">
+      <div style="flex:1;min-width:0;"><h2>IMMUNISATION RECORD</h2><p id="calc-sub" style="margin:0;">2025 AUSMAT Requirements &mdash; saved on this device</p></div>
+      <button id="calc-xbtn" onclick="closeImm()">&#215;</button>
+    </div>
+    <div id="imm-body">
+      <table class="imm-table">
+        <tr><th style="width:44%;">Vaccine</th><th style="width:28%;">Administered</th><th style="width:28%;">Expiry</th></tr>
+        <tbody id="imm-rows"></tbody>
+      </table>
+      <div id="imm-note"><b>GREEN</b> = current &nbsp;<b>YELLOW</b> = expires within 6 months &nbsp;<b>RED</b> = expired.
+      Expiry calculates automatically from the booster intervals in the 2025 AUSMAT Immunisation Requirements
+      (DTP 5yr, Influenza 1yr, Dukoral 2yr, Vaxchora 6mth, Imojev 5yr, JEspect 2yr, Polio 10yr, Typhoid 3yr inj/oral-3 or 5yr oral-4).
+      Hep A, Hep B, MMR, Varicella and Rabies are lifelong once dosed (Hep B and Rabies subject to serological proof of immunity).
+      COVID-19 has no fixed expiry (ATAGI age/risk based).</div>
+    </div>
+  </div>
+</div>
+
 <div id="calc-modal" onclick="if(event.target===this)closeCalc()">
   <div id="calc-box">
     <div id="calc-hdr">
@@ -397,10 +430,9 @@ function showPage(n){
   document.getElementById('nav-next').disabled=(n>=TOTAL);
   markTocActive();
   updateLinkLayer();
-  updateFormLayer();
 }
 /* ---------- contents page tap links ---------- */
-var LINKS={"7":[[0.0756,0.1664,0.9195,0.1972,11],[0.1058,0.1969,0.9195,0.2229,12],[0.1058,0.2221,0.9195,0.2481,13],[0.1058,0.2474,0.9195,0.2733,14],[0.1058,0.2726,0.9195,0.2985,15],[0.1058,0.2978,0.9195,0.3238,16],[0.1058,0.323,0.9195,0.349,17],[0.1058,0.3482,0.9195,0.3742,18],[0.1058,0.3734,0.9195,0.3994,19],[0.1058,0.3986,0.9195,0.4246,20],[0.1058,0.4238,0.9195,0.4498,21],[0.0756,0.4759,0.9195,0.5067,24],[0.1058,0.5064,0.9195,0.5324,25],[0.1058,0.5317,0.9195,0.5576,26],[0.1058,0.5569,0.9195,0.5829,27],[0.1058,0.5821,0.9195,0.6081,28],[0.1058,0.6073,0.9195,0.6333,29],[0.1058,0.6325,0.9195,0.6585,30],[0.1058,0.6577,0.9195,0.6837,30],[0.1058,0.6829,0.9195,0.7089,31],[0.1058,0.7082,0.9195,0.7341,34],[0.1058,0.7334,0.9195,0.7593,35],[0.1058,0.7586,0.9195,0.7846,36],[0.1058,0.7838,0.9195,0.8098,37],[0.1058,0.809,0.9195,0.835,39],[0.1058,0.8342,0.9195,0.8602,40],[0.1058,0.8594,0.9195,0.8854,41],[0.1058,0.8847,0.9195,0.9106,42],[0.1058,0.9099,0.9195,0.9358,43]],"8":[[0.0756,0.0942,0.9195,0.125,45],[0.1058,0.1247,0.9195,0.1507,46],[0.1058,0.1499,0.9195,0.1759,47],[0.1058,0.1752,0.9195,0.2011,48],[0.1058,0.2004,0.9195,0.2263,54],[0.1058,0.2256,0.9195,0.2516,57],[0.1058,0.2508,0.9195,0.2768,60],[0.0756,0.3028,0.9195,0.3336,62],[0.1058,0.3334,0.9195,0.3594,63],[0.1058,0.3586,0.9195,0.3846,64],[0.1058,0.3838,0.9195,0.4098,66],[0.1058,0.409,0.9195,0.435,67],[0.1058,0.4343,0.9195,0.4602,68],[0.1058,0.4595,0.9195,0.4854,69],[0.1058,0.4847,0.9195,0.5107,70],[0.1058,0.5099,0.9195,0.5359,71],[0.1058,0.5351,0.9195,0.5611,72],[0.1058,0.5603,0.9195,0.5863,73],[0.1058,0.5855,0.9195,0.6115,74],[0.1058,0.6107,0.9195,0.6367,75],[0.1058,0.636,0.9195,0.6619,76]],"9":[[0.0756,0.0942,0.9195,0.125,78],[0.1058,0.1247,0.9195,0.1507,79],[0.1058,0.1499,0.9195,0.1759,80],[0.1058,0.1752,0.9195,0.2011,81],[0.1058,0.2004,0.9195,0.2263,82],[0.1058,0.2256,0.9195,0.2516,83],[0.1058,0.2508,0.9195,0.2768,84],[0.1058,0.276,0.9195,0.302,85],[0.1058,0.3012,0.9195,0.3272,86],[0.1058,0.3264,0.9195,0.3524,87],[0.1058,0.3517,0.9195,0.3776,88],[0.1058,0.3769,0.9195,0.4028,89],[0.1058,0.4021,0.9195,0.4281,90],[0.1058,0.4273,0.9195,0.4533,91],[0.1058,0.4525,0.9195,0.4785,92],[0.1058,0.4777,0.9195,0.5037,93],[0.1058,0.5029,0.9195,0.5289,94],[0.0756,0.555,0.9195,0.5858,96],[0.1058,0.5855,0.9195,0.6115,97],[0.1058,0.6107,0.9195,0.6367,98],[0.1058,0.636,0.9195,0.6619,99],[0.1058,0.6612,0.9195,0.6872,100],[0.1058,0.6864,0.9195,0.7124,101],[0.1058,0.7116,0.9195,0.7376,102],[0.1058,0.7368,0.9195,0.7628,103],[0.1058,0.762,0.9195,0.788,104]],"10":[[0.0756,0.0955,0.9195,0.1263,106],[0.1058,0.1261,0.9195,0.152,107],[0.1058,0.1513,0.9195,0.1772,108],[0.1058,0.1765,0.9195,0.2025,109],[0.1058,0.2017,0.9195,0.2277,110],[0.1058,0.2269,0.9195,0.2529,111],[0.1058,0.2521,0.9146,0.2781,113],[0.1058,0.2773,0.6661,0.3033,114],[0.1058,0.3004,0.9146,0.3264,114],[0.1058,0.3256,0.9146,0.3516,115],[0.1058,0.3508,0.9146,0.3768,117],[0.1058,0.3761,0.9146,0.402,119],[0.0756,0.4281,0.9195,0.4589,122],[0.1058,0.4587,0.9195,0.4846,123],[0.1058,0.4839,0.9195,0.5098,124],[0.1058,0.5091,0.9195,0.5351,129],[0.1058,0.5343,0.9195,0.5603,132],[0.1058,0.5595,0.9195,0.5855,135],[0.1058,0.5847,0.9195,0.6107,136],[0.1058,0.6099,0.9195,0.6359,140],[0.1058,0.6352,0.9195,0.6611,141]],"11":[[0.0756,0.3561,0.4811,0.4226,12],[0.5178,0.3561,0.9233,0.4226,13],[0.0756,0.4432,0.4811,0.5097,14],[0.5178,0.4432,0.9233,0.5097,15],[0.0756,0.5303,0.4811,0.5968,16],[0.5174,0.5303,0.9229,0.5968,17],[0.0756,0.6174,0.4811,0.6839,18],[0.5178,0.6174,0.9233,0.6839,19],[0.0756,0.7046,0.4811,0.7711,20],[0.5178,0.7046,0.9233,0.7711,21]],"24":[[0.0756,0.3111,0.4866,0.3691,25],[0.5108,0.3111,0.9228,0.3691,26],[0.0756,0.5056,0.4866,0.5636,30],[0.5108,0.4407,0.9228,0.4987,30],[0.0756,0.3759,0.4866,0.4339,27],[0.5108,0.3759,0.9228,0.4339,28],[0.0756,0.4407,0.4866,0.4987,29],[0.5108,0.5056,0.9218,0.5636,31],[0.0756,0.5704,0.4877,0.6284,34],[0.5108,0.5704,0.9218,0.6284,35],[0.0756,0.6352,0.4877,0.6932,36],[0.5108,0.6352,0.9218,0.6932,37],[0.0756,0.7,0.4877,0.758,39],[0.5108,0.7,0.9218,0.758,40],[0.0756,0.7648,0.4877,0.8228,41],[0.5108,0.7648,0.9218,0.8228,42],[0.0756,0.8296,0.4877,0.8876,43]],"45":[[0.0756,0.3561,0.4811,0.4315,46],[0.5174,0.3561,0.9229,0.4315,47],[0.0756,0.4528,0.4811,0.5282,48],[0.5174,0.4528,0.9229,0.5282,54],[0.0756,0.5495,0.4811,0.6249,57],[0.5174,0.5495,0.9229,0.6249,60]],"62":[[0.0756,0.3201,0.4811,0.3824,63],[0.5174,0.3201,0.9229,0.3824,64],[0.0756,0.4009,0.4811,0.4631,66],[0.5174,0.4009,0.9229,0.4631,67],[0.5174,0.4816,0.9229,0.5439,69],[0.0756,0.5624,0.4811,0.6246,70],[0.5174,0.5624,0.9229,0.6246,71],[0.0756,0.6431,0.4811,0.7054,72],[0.5174,0.6431,0.9229,0.7054,73],[0.0756,0.7239,0.4811,0.7861,74],[0.5174,0.7239,0.9229,0.7861,75],[0.0756,0.8046,0.4811,0.8668,76],[0.0756,0.4816,0.4811,0.5439,68]],"78":[[0.0756,0.3582,0.4811,0.4162,79],[0.5174,0.3582,0.9229,0.4162,80],[0.0756,0.4262,0.4811,0.4842,81],[0.5174,0.4262,0.9229,0.4842,82],[0.0756,0.4942,0.4811,0.5522,83],[0.0756,0.5622,0.4811,0.6202,85],[0.5174,0.5622,0.9229,0.6202,86],[0.0756,0.6302,0.4811,0.6882,87],[0.5174,0.6302,0.9229,0.6882,88],[0.0756,0.6982,0.4811,0.7562,89],[0.5174,0.6982,0.9229,0.7562,90],[0.0756,0.7662,0.4811,0.8242,91],[0.5174,0.7662,0.9229,0.8242,92],[0.0756,0.8342,0.4811,0.8922,93],[0.5174,0.8342,0.9229,0.8922,94],[0.5174,0.4942,0.9229,0.5522,84]],"96":[[0.0756,0.3561,0.4811,0.4315,97],[0.5174,0.3561,0.9229,0.4315,98],[0.0756,0.4528,0.4811,0.5282,99],[0.5174,0.4528,0.9229,0.5282,100],[0.0756,0.5495,0.4811,0.6249,101],[0.5164,0.5456,0.922,0.621,102],[0.0756,0.6462,0.4811,0.7216,103],[0.5174,0.6462,0.9229,0.7216,104]],"106":[[0.0756,0.3561,0.4811,0.4315,107],[0.5174,0.3561,0.9229,0.4315,108],[0.0756,0.4528,0.4811,0.5282,109],[0.5174,0.4528,0.9229,0.5282,110],[0.0756,0.5495,0.4811,0.6249,111],[0.5174,0.5495,0.9229,0.6249,113],[0.0756,0.6462,0.4811,0.7216,114],[0.5174,0.6462,0.9229,0.7216,115],[0.0756,0.7429,0.4811,0.8183,117],[0.5174,0.7429,0.9229,0.8183,119]],"122":[[0.0756,0.3561,0.4811,0.4315,123],[0.5174,0.3561,0.9229,0.4315,124],[0.0756,0.527,0.4811,0.6024,135],[0.5174,0.527,0.9229,0.6024,136],[0.0756,0.6124,0.4811,0.6879,140],[0.5174,0.6124,0.9229,0.6879,141],[0.0756,0.4415,0.4811,0.517,129],[0.5174,0.4415,0.9229,0.517,132]]};
+var LINKS={"7":[[0.0756,0.1664,0.9195,0.1972,11],[0.1058,0.1969,0.9195,0.2229,12],[0.1058,0.2221,0.9195,0.2481,13],[0.1058,0.2474,0.9195,0.2733,14],[0.1058,0.2726,0.9195,0.2985,15],[0.1058,0.2978,0.9195,0.3238,16],[0.1058,0.323,0.9195,0.349,17],[0.1058,0.3482,0.9195,0.3742,18],[0.1058,0.3734,0.9195,0.3994,19],[0.1058,0.3986,0.9195,0.4246,20],[0.1058,0.4238,0.9195,0.4498,21],[0.0756,0.4759,0.9195,0.5067,24],[0.1058,0.5064,0.9195,0.5324,25],[0.1058,0.5317,0.9195,0.5576,26],[0.1058,0.5569,0.9195,0.5829,27],[0.1058,0.5821,0.9195,0.6081,28],[0.1058,0.6073,0.9195,0.6333,29],[0.1058,0.6325,0.9195,0.6585,30],[0.1058,0.6577,0.9195,0.6837,30],[0.1058,0.6829,0.9195,0.7089,31],[0.1058,0.7082,0.9195,0.7341,34],[0.1058,0.7334,0.9195,0.7593,35],[0.1058,0.7586,0.9195,0.7846,36],[0.1058,0.7838,0.9195,0.8098,37],[0.1058,0.809,0.9195,0.835,39],[0.1058,0.8342,0.9195,0.8602,40],[0.1058,0.8594,0.9195,0.8854,41],[0.1058,0.8847,0.9195,0.9106,42],[0.1058,0.9099,0.9195,0.9358,43]],"8":[[0.0756,0.0942,0.9195,0.125,45],[0.1058,0.1247,0.9195,0.1507,46],[0.1058,0.1499,0.9195,0.1759,47],[0.1058,0.1752,0.9195,0.2011,48],[0.1058,0.2004,0.9195,0.2263,54],[0.1058,0.2256,0.9195,0.2516,57],[0.1058,0.2508,0.9195,0.2768,60],[0.0756,0.3028,0.9195,0.3336,62],[0.1058,0.3334,0.9195,0.3594,63],[0.1058,0.3586,0.9195,0.3846,64],[0.1058,0.3838,0.9195,0.4098,66],[0.1058,0.409,0.9195,0.435,67],[0.1058,0.4343,0.9195,0.4602,68],[0.1058,0.4595,0.9195,0.4854,69],[0.1058,0.4847,0.9195,0.5107,70],[0.1058,0.5099,0.9195,0.5359,71],[0.1058,0.5351,0.9195,0.5611,72],[0.1058,0.5603,0.9195,0.5863,73],[0.1058,0.5855,0.9195,0.6115,74],[0.1058,0.6107,0.9195,0.6367,75],[0.1058,0.636,0.9195,0.6619,76]],"9":[[0.0756,0.0942,0.9195,0.125,78],[0.1058,0.1247,0.9195,0.1507,79],[0.1058,0.1499,0.9195,0.1759,80],[0.1058,0.1752,0.9195,0.2011,81],[0.1058,0.2004,0.9195,0.2263,82],[0.1058,0.2256,0.9195,0.2516,83],[0.1058,0.2508,0.9195,0.2768,84],[0.1058,0.276,0.9195,0.302,85],[0.1058,0.3012,0.9195,0.3272,86],[0.1058,0.3264,0.9195,0.3524,87],[0.1058,0.3517,0.9195,0.3776,88],[0.1058,0.3769,0.9195,0.4028,89],[0.1058,0.4021,0.9195,0.4281,90],[0.1058,0.4273,0.9195,0.4533,91],[0.1058,0.4525,0.9195,0.4785,92],[0.1058,0.4777,0.9195,0.5037,93],[0.1058,0.5029,0.9195,0.5289,94],[0.0756,0.555,0.9195,0.5858,96],[0.1058,0.5855,0.9195,0.6115,97],[0.1058,0.6107,0.9195,0.6367,98],[0.1058,0.636,0.9195,0.6619,99],[0.1058,0.6612,0.9195,0.6872,100],[0.1058,0.6864,0.9195,0.7124,101],[0.1058,0.7116,0.9195,0.7376,102],[0.1058,0.7368,0.9195,0.7628,103],[0.1058,0.762,0.9195,0.788,104]],"10":[[0.0756,0.0955,0.9195,0.1263,106],[0.1058,0.1261,0.9195,0.152,107],[0.1058,0.1513,0.9195,0.1772,108],[0.1058,0.1765,0.9195,0.2025,109],[0.1058,0.2017,0.9195,0.2277,110],[0.1058,0.2269,0.9195,0.2529,111],[0.1058,0.2521,0.9146,0.2781,113],[0.1058,0.2773,0.6661,0.3033,114],[0.1058,0.3004,0.9146,0.3264,114],[0.1058,0.3256,0.9146,0.3516,115],[0.1058,0.3508,0.9146,0.3768,117],[0.1058,0.3761,0.9146,0.402,119],[0.0756,0.4281,0.9195,0.4589,122],[0.1058,0.4587,0.9195,0.4846,123],[0.1058,0.4839,0.9195,0.5098,124],[0.1058,0.5091,0.9195,0.5351,129],[0.1058,0.5343,0.9195,0.5603,132],[0.1058,0.5595,0.9195,0.5855,135],[0.1058,0.5847,0.9195,0.6107,136],[0.1058,0.6099,0.9195,0.6359,140],[0.1058,0.6352,0.9195,0.6611,141]],"11":[[0.0756,0.3561,0.4811,0.4226,12],[0.5178,0.3561,0.9233,0.4226,13],[0.0756,0.4432,0.4811,0.5097,14],[0.5178,0.4432,0.9233,0.5097,15],[0.0756,0.5303,0.4811,0.5968,16],[0.5174,0.5303,0.9229,0.5968,17],[0.0756,0.6174,0.4811,0.6839,18],[0.5178,0.6174,0.9233,0.6839,19],[0.0756,0.7046,0.4811,0.7711,20],[0.5178,0.7046,0.9233,0.7711,21]],"24":[[0.0756,0.3111,0.4866,0.3691,25],[0.5108,0.3111,0.9228,0.3691,26],[0.0756,0.5056,0.4866,0.5636,30],[0.5108,0.4407,0.9228,0.4987,30],[0.0756,0.3759,0.4866,0.4339,27],[0.5108,0.3759,0.9228,0.4339,28],[0.0756,0.4407,0.4866,0.4987,29],[0.5108,0.5056,0.9218,0.5636,31],[0.0756,0.5704,0.4877,0.6284,34],[0.5108,0.5704,0.9218,0.6284,35],[0.0756,0.6352,0.4877,0.6932,36],[0.5108,0.6352,0.9218,0.6932,37],[0.0756,0.7,0.4877,0.758,39],[0.5108,0.7,0.9218,0.758,40],[0.0756,0.7648,0.4877,0.8228,41],[0.5108,0.7648,0.9218,0.8228,42],[0.0756,0.8296,0.4877,0.8876,43]],"45":[[0.0756,0.3561,0.4811,0.4315,46],[0.5174,0.3561,0.9229,0.4315,47],[0.0756,0.4528,0.4811,0.5282,48],[0.5174,0.4528,0.9229,0.5282,54],[0.0756,0.5495,0.4811,0.6249,57],[0.5174,0.5495,0.9229,0.6249,60]],"62":[[0.0756,0.3201,0.4811,0.3824,63],[0.5174,0.3201,0.9229,0.3824,64],[0.0756,0.4009,0.4811,0.4631,66],[0.5174,0.4009,0.9229,0.4631,67],[0.5174,0.4816,0.9229,0.5439,69],[0.0756,0.5624,0.4811,0.6246,70],[0.5174,0.5624,0.9229,0.6246,71],[0.0756,0.6431,0.4811,0.7054,72],[0.5174,0.6431,0.9229,0.7054,73],[0.0756,0.7239,0.4811,0.7861,74],[0.5174,0.7239,0.9229,0.7861,75],[0.0756,0.8046,0.4811,0.8668,76],[0.0756,0.4816,0.4811,0.5439,68]],"78":[[0.0756,0.3582,0.4811,0.4162,79],[0.5174,0.3582,0.9229,0.4162,80],[0.0756,0.4262,0.4811,0.4842,81],[0.5174,0.4262,0.9229,0.4842,82],[0.0756,0.4942,0.4811,0.5522,83],[0.0756,0.5622,0.4811,0.6202,85],[0.5174,0.5622,0.9229,0.6202,86],[0.0756,0.6302,0.4811,0.6882,87],[0.5174,0.6302,0.9229,0.6882,88],[0.0756,0.6982,0.4811,0.7562,89],[0.5174,0.6982,0.9229,0.7562,90],[0.0756,0.7662,0.4811,0.8242,91],[0.5174,0.7662,0.9229,0.8242,92],[0.0756,0.8342,0.4811,0.8922,93],[0.5174,0.8342,0.9229,0.8922,94],[0.5174,0.4942,0.9229,0.5522,84]],"96":[[0.0756,0.3561,0.4811,0.4315,97],[0.5174,0.3561,0.9229,0.4315,98],[0.0756,0.4528,0.4811,0.5282,99],[0.5174,0.4528,0.9229,0.5282,100],[0.0756,0.5495,0.4811,0.6249,101],[0.5164,0.5456,0.922,0.621,102],[0.0756,0.6462,0.4811,0.7216,103],[0.5174,0.6462,0.9229,0.7216,104]],"106":[[0.0756,0.3561,0.4811,0.4315,107],[0.5174,0.3561,0.9229,0.4315,108],[0.0756,0.4528,0.4811,0.5282,109],[0.5174,0.4528,0.9229,0.5282,110],[0.0756,0.5495,0.4811,0.6249,111],[0.5174,0.5495,0.9229,0.6249,113],[0.0756,0.6462,0.4811,0.7216,114],[0.5174,0.6462,0.9229,0.7216,115],[0.0756,0.7429,0.4811,0.8183,117],[0.5174,0.7429,0.9229,0.8183,119]],"122":[[0.0756,0.3561,0.4811,0.4315,123],[0.5174,0.3561,0.9229,0.4315,124],[0.0756,0.527,0.4811,0.6024,135],[0.5174,0.527,0.9229,0.6024,136],[0.0756,0.6124,0.4811,0.6879,140],[0.5174,0.6124,0.9229,0.6879,141],[0.0756,0.4415,0.4811,0.517,129],[0.5174,0.4415,0.9229,0.517,132]],"3":[[0.144,0.558,0.923,0.927,"imm"]]};
 function positionOverlay(el){
   if(!el||el.style.display==='none') return;
   var st=document.getElementById('stage');
@@ -412,7 +444,6 @@ function positionOverlay(el){
 }
 function positionLinkLayer(){
   positionOverlay(document.getElementById('link-layer'));
-  positionOverlay(document.getElementById('form-layer'));
 }
 var SECTS=[11,24,45,62,78,96,106,122];
 var NO_RIBBON={144:1,145:1};
@@ -433,7 +464,10 @@ function updateLinkLayer(){
   var html='';
   for(var i=0;i<zs.length;i++){
     var z=zs[i];
-    html+='<div class="plink" onclick="showPage('+z[4]+')" style="left:'+(z[0]*100)+'%;top:'+(z[1]*100)+'%;width:'+((z[2]-z[0])*100)+'%;height:'+((z[3]-z[1])*100)+'%"></div>';
+    var act=(z[4]==='imm')?'openImm()':'showPage('+z[4]+')';
+    var cls=(z[4]==='imm')?'plink imm-zone':'plink';
+    var inner=(z[4]==='imm')?'<span class="imm-openpill">Tap to open Immunisation Tracker</span>':'';
+    html+='<div class="'+cls+'" onclick="'+act+'" style="left:'+(z[0]*100)+'%;top:'+(z[1]*100)+'%;width:'+((z[2]-z[0])*100)+'%;height:'+((z[3]-z[1])*100)+'%">'+inner+'</div>';
   }
   ll.innerHTML=html;
   ll.style.display='block';
@@ -442,55 +476,78 @@ function updateLinkLayer(){
 }
 img.addEventListener('load', positionLinkLayer);
 window.addEventListener('resize', function(){ positionLinkLayer(); });
-/* ---------- page 3 vaccination date fields ---------- */
-var VAXD=[
- ['vd-dtpa',248,392,344,409],
- ['vd-hepa',142,412.5,204,429.5],
- ['vd-hepb',294,412.5,344,429.5],
- ['vd-flu',268,433,344,450],
- ['vd-mmr',227,453,344,470],
- ['vd-var',246,473.5,344,490.5],
- ['vd-men',197,493.5,344,510.5],
- ['vd-polio',109,514,204,531],
- ['vd-covid',278,514,344,531]
+/* ---------- immunisation tracker (2025 AUSMAT rules) ---------- */
+var IMMUN=[
+ ['covid','COVID-19',0],
+ ['dtp','Diphtheria/Tetanus/Pertussis',60],
+ ['hepa','Hepatitis A',0],
+ ['hepb','Hepatitis B',0],
+ ['flu','Influenza',12],
+ ['mmr','Measles/Mumps/Rubella',0],
+ ['var','Varicella',0],
+ ['duk','Cholera (Dukoral)',24],
+ ['vaxc','Cholera (Vaxchora)',6],
+ ['imo','Jap. Encephalitis (Imojev)',60],
+ ['jes','Jap. Encephalitis (JEspect)',24],
+ ['pol','Poliomyelitis',120],
+ ['rab','Rabies',0],
+ ['ty3','Typhoid (inj or oral 3-dose)',36],
+ ['ty4','Typhoid (oral 4-dose)',60]
 ];
-function vaxLoad(){ try{ return JSON.parse(localStorage.getItem('fogVaxDates')||'{}'); }catch(e){ return {}; } }
-function vaxSave(o){ try{ localStorage.setItem('fogVaxDates', JSON.stringify(o)); }catch(e){} }
-(function buildFormLayer(){
-  var fl=document.getElementById('form-layer');
-  if(!fl) return;
-  var saved=vaxLoad(), html='';
-  for(var i=0;i<VAXD.length;i++){
-    var z=VAXD[i];
-    html+='<input type="date" class="vaxd" id="'+z[0]+'" style="left:'+(z[1]/375*100)+'%;top:'+(z[2]/667*100)+
-          '%;width:'+((z[3]-z[1])/375*100)+'%;height:'+((z[4]-z[2])/667*100)+'%">';
+function immLoad(){ try{ return JSON.parse(localStorage.getItem('fogImmun')||'{}'); }catch(e){ return {}; } }
+function immSave(o){ try{ localStorage.setItem('fogImmun', JSON.stringify(o)); }catch(e){} }
+function isoToday(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function isoAddMonths(iso,m){ /* EDATE: clamp to last day of target month */
+  var p=iso.split('-'), y=+p[0], mo=+p[1]-1, dy=+p[2];
+  var last=new Date(y, mo+m+1, 0).getDate();
+  var t=new Date(y, mo+m, Math.min(dy,last));
+  return t.getFullYear()+'-'+('0'+(t.getMonth()+1)).slice(-2)+'-'+('0'+t.getDate()).slice(-2);
+}
+function fmtDMY(iso){ var p=iso.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; }
+function immRefresh(){
+  var saved=immLoad(), today=isoToday(), warn=isoAddMonths(today,6);
+  for(var i=0;i<IMMUN.length;i++){
+    var k=IMMUN[i][0], mths=IMMUN[i][2];
+    var tr=document.getElementById('imr-'+k);
+    var adm=(saved[k]&&saved[k].adm)||'';
+    var expCell=document.getElementById('ime-'+k);
+    var exp='';
+    if(adm){ exp=(mths===0)?'Lifelong':isoAddMonths(adm,mths); }
+    var label = exp ? (exp==='Lifelong' ? (k==='covid'?'No exp':'Lifelong') : fmtDMY(exp)) : '\u2014';
+    expCell.textContent = label;
+    tr.className='';
+    if(exp==='Lifelong'){ tr.className='imm-ok'; }
+    else if(exp){
+      if(exp<today) tr.className='imm-red';
+      else if(exp<warn) tr.className='imm-warn';
+      else tr.className='imm-ok';
+    }
   }
-  fl.innerHTML=html;
-  for(var j=0;j<VAXD.length;j++){
-    var el=document.getElementById(VAXD[j][0]);
-    if(saved[VAXD[j][0]]) el.value=saved[VAXD[j][0]];
-    el.addEventListener('change', function(){
-      var o=vaxLoad(); o[this.id]=this.value; vaxSave(o);
-      vaxColor(this);
-    });
+}
+(function buildImm(){
+  var tb=document.getElementById('imm-rows');
+  if(!tb) return;
+  var saved=immLoad(), html='';
+  for(var i=0;i<IMMUN.length;i++){
+    var k=IMMUN[i][0], nm=IMMUN[i][1], mths=IMMUN[i][2];
+    var adm=(saved[k]&&saved[k].adm)||'';
+    html+='<tr id="imr-'+k+'"><td>'+nm+'</td>'+
+      '<td><input type="date" id="ima-'+k+'" value="'+adm+'"></td>'+
+      '<td class="imm-exp-cell" id="ime-'+k+'">\u2014</td>'+
+      '</tr>';
   }
+  tb.innerHTML=html;
+  for(var j=0;j<IMMUN.length;j++){
+    (function(k,mths){
+      function admUpd(){ var o=immLoad(); o[k]=o[k]||{}; o[k].adm=this.value; immSave(o); immRefresh(); }
+      var ai=document.getElementById('ima-'+k);
+      ai.addEventListener('change',admUpd); ai.addEventListener('input',admUpd);
+    })(IMMUN[j][0],IMMUN[j][2]);
+  }
+  immRefresh();
 })();
-function vaxColor(el){
-  el.classList.remove('past','future');
-  if(!el.value) return;
-  var d=new Date(), today=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
-  if(el.value<today) el.classList.add('past');
-  else el.classList.add('future');
-}
-function updateFormLayer(){
-  var fl=document.getElementById('form-layer');
-  if(!fl) return;
-  fl.style.display=(cur===3)?'block':'none';
-  if(cur===3){
-    fl.style.transform='none'; positionOverlay(fl);
-    for(var i=0;i<VAXD.length;i++){ var el=document.getElementById(VAXD[i][0]); if(el) vaxColor(el); }
-  }
-}
+function openImm(){ document.getElementById('imm-modal').classList.add('open'); immRefresh(); }
+function closeImm(){ document.getElementById('imm-modal').classList.remove('open'); }
 function goHome(){ showPage(7); closeToc(); }
 function prevPage(){ if(cur>1) showPage(cur-1); }
 function nextPage(){ if(cur<TOTAL) showPage(cur+1); }
@@ -549,8 +606,6 @@ function applyT(){
   img.style.transform=t;
   var ll=document.getElementById('link-layer');
   if(ll){ ll.style.transition=img.style.transition; ll.style.transform=t; }
-  var fl=document.getElementById('form-layer');
-  if(fl && fl.style.display!=='none'){ fl.style.transition=img.style.transition; fl.style.transform=t; }
 }
 function resetZoom(){ scale=1; tx=0; ty=0; img.style.transition='none'; applyT(); }
 function clampPan(){
