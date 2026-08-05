@@ -148,17 +148,24 @@ tr.imm-red td{background:#fdeaea;color:#a00000;}
   .calc-table td:first-child{width:55%;font-weight:500;}
   .calc-table td:last-child{text-align:center;font-weight:600;}
   .calc-table select,.calc-table input[type=number]{width:100%;border:none;background:transparent;font-size:16px;font-weight:600;text-align:center;color:#000;-webkit-appearance:none;outline:none;padding:0;}
+  .c3-inwrap{display:inline-flex;align-items:baseline;justify-content:center;gap:4px;width:100%;}
+  .c3-inwrap input[type=number]{width:auto;min-width:0;flex:0 1 auto;text-align:right;}
+  .c3-unit{color:#555;font-weight:600;font-size:14px;flex:0 0 auto;}
   .calc-out{color:#8b0000;font-size:14px;font-weight:700;}
   .calc-fixed{color:#555;font-weight:500;}
   .calc-note-bold{font-size:14px;font-weight:bold;margin:6px 0 14px;line-height:1.4;}
-  #calc-track{display:flex;width:200%;transition:transform .28s ease;touch-action:pan-y;}
-  #calc-track.p2{transform:translateX(-50%);}
-  .calc-panel{width:50%;flex-shrink:0;box-sizing:border-box;padding:14px;}
+  #calc-track{display:flex;width:300%;transition:transform .28s ease;touch-action:pan-y;}
+  #calc-track.p2{transform:translateX(-33.3333%);}
+  #calc-track.p3{transform:translateX(-66.6667%);}
+  .calc-panel{width:33.3333%;flex-shrink:0;box-sizing:border-box;padding:14px;}
   #calc-nav{display:flex;align-items:center;justify-content:center;gap:14px;padding:4px 0 12px;border-top:1px solid #eee;}
   .calc-arrow{background:#eee;border:none;border-radius:6px;width:32px;height:28px;font-size:16px;line-height:1;cursor:pointer;color:#333;}
   .calc-arrow:active{background:#ddd;}
   .calc-arrow:disabled{opacity:0.3;cursor:default;}
   .calc-dot{width:8px;height:8px;border-radius:50%;background:#ccc;transition:background .2s;}
+  td.calc-out.c3-off{background:#555;color:#888;border-radius:4px;}
+  .c3-shapewrap{margin:8px 0 2px;text-align:center;}
+  .c3-shapewrap svg{width:78%;max-width:250px;height:auto;}
   .calc-dot.active{background:#8b0000;}
   /* share modal */
   #share-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:400;
@@ -301,12 +308,38 @@ tr.imm-red td{background:#fdeaea;color:#a00000;}
       <div class="calc-diags" id="diags-2"></div>
       <p class="calc-note-bold">*1 Raker = 6 Gussets, 2 Cleats, 1 Wedge Set</p>
       </div>
+      <div class="calc-panel">
+      <div class="calc-step-title">Area &amp; volume</div>
+      <table class="calc-table">
+        <tr><td>Shape</td><td style="text-align:center;"><select id="ci3-shape" onchange="calcCompute3()" style="text-align:center;text-align-last:center;margin:0 auto;display:block;width:auto;"><option value="" selected>Choose shape</option><option value="rect">Square / Cube</option><option value="tri">Triangle / Prism</option><option value="circ">Circle / Cylinder</option></select></td></tr>
+        <tr><td>Material</td><td style="text-align:center;"><select id="ci3-mat" onchange="calcCompute3()" style="text-align:center;text-align-last:center;margin:0 auto;display:block;width:auto;"><option value="" selected>Choose</option><option value="2500">Reinforced concrete</option><option value="2000">Masonry</option><option value="600">Wood</option><option value="8000">Steel</option><option value="1000">Water</option></select></td></tr>
+        <tr id="c3-r-dia"><td>Diameter</td><td><span class="c3-inwrap"><input id="ci3-dia" type="number" inputmode="numeric" placeholder="0" min="0" step="10" oninput="calcCompute3()"><span class="c3-unit">mm</span></span></td></tr>
+        <tr id="c3-r-len"><td>Length</td><td><span class="c3-inwrap"><input id="ci3-len" type="number" inputmode="numeric" placeholder="0" min="0" step="10" oninput="calcCompute3()"><span class="c3-unit">mm</span></span></td></tr>
+        <tr id="c3-r-wid"><td>Width</td><td><span class="c3-inwrap"><input id="ci3-wid" type="number" inputmode="numeric" placeholder="0" min="0" step="10" oninput="calcCompute3()"><span class="c3-unit">mm</span></span></td></tr>
+        <tr id="c3-r-hgt"><td>Height</td><td><span class="c3-inwrap"><input id="ci3-hgt" type="number" inputmode="numeric" placeholder="0" min="0" step="10" oninput="calcCompute3()"><span class="c3-unit">mm</span></span></td></tr>
+      </table>
+      <table class="calc-table">
+        <tr><td id="c3-out-label">Area</td><td class="calc-out" id="co3-res">&mdash;</td></tr>
+        <tr id="c3-vol-row"><td>Volume</td><td class="calc-out" id="co3-vol">&mdash;</td></tr>
+        <tr id="c3-wt-row"><td>Weight</td><td class="calc-out" id="co3-wt">&mdash;</td></tr>
+      </table>
+      <div class="c3-shapewrap" id="c3-shape"></div>
+      <p class="calc-note-bold" id="c3-formula" style="font-weight:600;color:#555;">Length &times; width</p>
+      <div class="calc-step-title">Unit conversion</div>
+      <table class="calc-table">
+        <tr><td>Value</td><td><input id="ci3-cval" type="number" inputmode="decimal" placeholder="enter value" step="any" oninput="calcConv3()"></td></tr>
+        <tr><td>Convert</td><td style="text-align:center;"><select id="ci3-conv" onchange="calcConv3()" style="text-align:center;text-align-last:center;margin:0 auto;display:block;width:auto;"><option value="lb2kg">Pounds &rarr; Kilograms</option><option value="kg2lb">Kilograms &rarr; Pounds</option><option value="in2cm">Inches &rarr; Centimetres</option><option value="cm2in">Centimetres &rarr; Inches</option><option value="ft2m">Feet &rarr; Metres</option><option value="m2ft">Metres &rarr; Feet</option><option value="mi2km">Miles &rarr; Kilometres</option><option value="km2mi">Kilometres &rarr; Miles</option><option value="sqft2sqm">Sq. feet &rarr; Sq. metres</option><option value="sqm2sqft">Sq. metres &rarr; Sq. feet</option><option value="cuft2cum">Cubic feet &rarr; Cubic metres</option><option value="cum2cuft">Cubic metres &rarr; Cubic feet</option><option value="gal2l">US Gallons &rarr; Litres</option><option value="l2gal">Litres &rarr; US Gallons</option><option value="f2c">Degrees F &rarr; Degrees C</option><option value="c2f">Degrees C &rarr; Degrees F</option><option value="kpa2psi">Pressure kPa &rarr; Psi</option><option value="psi2kpa">Pressure Psi &rarr; kPa</option></select></td></tr>
+        <tr><td id="c3-conv-label">Result</td><td class="calc-out" id="co3-conv">&mdash;</td></tr>
+      </table>
+      <p class="calc-note-bold">Reference: FOG p29 Calculations &amp; Conversions.</p>
+      </div>
     </div>
     <div id="calc-nav">
-      <button class="calc-arrow" id="calc-prev" onclick="setCalcPage(1)">&#8249;</button>
+      <button class="calc-arrow" id="calc-prev" onclick="setCalcPage(calcPage-1)">&#8249;</button>
       <span class="calc-dot active" id="calc-dot1"></span>
       <span class="calc-dot" id="calc-dot2"></span>
-      <button class="calc-arrow" id="calc-next" onclick="setCalcPage(2)">&#8250;</button>
+      <span class="calc-dot" id="calc-dot3"></span>
+      <button class="calc-arrow" id="calc-next" onclick="setCalcPage(calcPage+1)">&#8250;</button>
     </div>
   </div>
 </div>
@@ -783,6 +816,7 @@ function diagHtml(p){
   if(a) a.innerHTML=diagHtml('d1');
   if(b) b.innerHTML=diagHtml('d2');
 })();
+try{ calcCompute3(); calcConv3(); }catch(e){}
 function diagUpdate(p,v){
   function set(id,val){ var el=document.getElementById(id); if(el) el.textContent=val; }
   set(p+'-wp',v.wp); set(p+'-ip',v.ip); set(p+'-wcl','750'); set(p+'-wex',v.ex);
@@ -790,18 +824,154 @@ function diagUpdate(p,v){
   set(p+'-rl',v.rl); set(p+'-cut',v.cut);
   set(p+'-ca',v.cuts[0]); set(p+'-cb',v.cuts[1]); set(p+'-cc',v.cuts[2]); set(p+'-cd',v.cuts[3]);
 }
+/* ---------- panel 3: area/volume + unit conversions (FOG p29) ---------- */
+function c3num(id){ var v=parseFloat(document.getElementById(id).value); return isNaN(v)?null:v; }
+/* ---------- panel 3: little isometric shape with dimension pills ---------- */
+function c3pill(x,y,txt){
+  if(txt==null||txt==='') return '';
+  var w=16+String(txt).length*8.2;
+  return '<g><rect x="'+(x-w/2)+'" y="'+(y-11)+'" width="'+w+'" height="22" rx="11" fill="#0b5ed7"/>'+
+         '<text x="'+x+'" y="'+(y+5)+'" text-anchor="middle" font-size="13" font-weight="700" fill="#fff" font-family="sans-serif">'+txt+'</text></g>';
+}
+function c3face(pts,rgb){
+  return '<polygon points="'+pts.map(function(p){return p[0]+','+p[1];}).join(' ')+'" fill="rgb('+rgb.join(',')+')" stroke="#333" stroke-width="1.5"/>';
+}
+function c3shade(c,f){ return [Math.round(c[0]*f),Math.round(c[1]*f),Math.round(c[2]*f)]; }
+function dimTxt(v){ return (v==null||v==='')?'':(v+' mm'); }
+function drawC3Shape(shape,dims){
+  var el=document.getElementById('c3-shape'); if(!el) return;
+  if(!shape){ el.innerHTML=''; return; }
+  var O=[224,123,57];  /* diagram orange */
+  var L=dims.len, W=dims.wid, H=dims.hgt, D=dims.dia;
+  var s='';
+  if(shape==='rect'){
+    /* proper isometric box: flat front face + top + right side */
+    var d=[40,-24];
+    var flb=[70,150],frb=[170,150],frt=[170,80],flt=[70,80];
+    function A(pt){ return [pt[0]+d[0],pt[1]+d[1]]; }
+    var blt=A(flt),brt=A(frt),brb=A(frb);
+    s+='<svg viewBox="0 0 260 200">';
+    s+=c3face([flt,frt,brt,blt],O);                 /* top */
+    s+=c3face([frb,brb,brt,frt],c3shade(O,0.66));   /* right side */
+    s+=c3face([flb,frb,frt,flt],c3shade(O,0.85));   /* front */
+    s+=c3pill(120,170, dimTxt(L));                  /* length (front bottom) */
+    s+=c3pill(48,115,  dimTxt(W));                  /* width -> use left vertical spot */
+    s+=c3pill(170,115, dimTxt(H));                  /* height: centred on right vertical edge */
+    s+='</svg>';
+    } else if(shape==='tri'){
+    /* triangular prism: right-triangle cross-section extruded back-right */
+    var A=[70,168],B=[186,168],C=[70,66];
+    var dep=[34,-19];
+    var Ap=[A[0]+dep[0],A[1]+dep[1]],Bp=[B[0]+dep[0],B[1]+dep[1]],Cp=[C[0]+dep[0],C[1]+dep[1]];
+    s+='<svg viewBox="0 0 240 210">';
+    s+=c3face([C,B,Bp,Cp],c3shade(O,0.82));     /* hypotenuse face */
+    s+=c3face([A,B,Bp,Ap],c3shade(O,0.66));     /* bottom face */
+    s+=c3face([A,B,C],O);                        /* front triangle */
+    s+=c3pill(128,186, dimTxt(L));               /* length (base) */
+    s+=c3pill(38,117,  dimTxt(W));               /* width (vertical) */
+    s+=c3pill(214,150, dimTxt(H));               /* height (depth) */
+    s+='</svg>';
+  } else if(shape==='circ'){
+    /* cylinder */
+    var cx=120, rx=54, ryE=20, topY=68, botY=150;
+    s+='<svg viewBox="0 0 240 210">';
+    /* body */
+    s+='<path d="M'+(cx-rx)+' '+topY+' L'+(cx-rx)+' '+botY+
+       ' A'+rx+' '+ryE+' 0 0 0 '+(cx+rx)+' '+botY+
+       ' L'+(cx+rx)+' '+topY+
+       ' A'+rx+' '+ryE+' 0 0 1 '+(cx-rx)+' '+topY+' Z" fill="rgb('+c3shade(O,0.8).join(',')+')" stroke="#333" stroke-width="1.5"/>';
+    /* top ellipse */
+    s+='<ellipse cx="'+cx+'" cy="'+topY+'" rx="'+rx+'" ry="'+ryE+'" fill="rgb('+O.join(',')+')" stroke="#333" stroke-width="1.5"/>';
+    /* diameter line across the top ellipse with end ticks */
+    s+='<line x1="'+(cx-rx)+'" y1="'+topY+'" x2="'+(cx+rx)+'" y2="'+topY+'" stroke="#0b5ed7" stroke-width="3"/>';
+    s+='<line x1="'+(cx-rx)+'" y1="'+(topY-9)+'" x2="'+(cx-rx)+'" y2="'+(topY+9)+'" stroke="#0b5ed7" stroke-width="3"/>';
+    s+='<line x1="'+(cx+rx)+'" y1="'+(topY-9)+'" x2="'+(cx+rx)+'" y2="'+(topY+9)+'" stroke="#0b5ed7" stroke-width="3"/>';
+    s+=c3pill(cx,32, dimTxt(D));                 /* diameter */
+    s+=c3pill(cx+rx+30,110, dimTxt(H));          /* height */
+    s+='</svg>';
+  }
+  el.innerHTML=s;
+}
+
+function calcCompute3(){
+  var shape=document.getElementById('ci3-shape').value;
+  var isCirc = (shape==='circ'||shape==='pipe');
+  /* rect/box/tri: length,width,height | circle/pipe: diameter,height */
+  document.getElementById('c3-r-len').style.display = isCirc?'none':'';
+  document.getElementById('c3-r-wid').style.display = isCirc?'none':'';
+  document.getElementById('c3-r-dia').style.display = isCirc?'':'none';
+  document.getElementById('c3-r-hgt').style.display = shape?'':'';
+  var round3=function(x){ return Math.round(x*1000)/1000; };
+  var formulas={
+    rect:'Area = Length \u00d7 Width \u00b7 Volume = Area \u00d7 Height',
+    tri:'Area = (Length \u00d7 Width) / 2 \u00b7 Volume = Area \u00d7 Height',
+    circ:'Area = 3.142 \u00d7 (Diameter/2)\u00b2 \u00b7 Volume = Area \u00d7 Height',
+    box:'Area = Length \u00d7 Width \u00b7 Volume = Area \u00d7 Height',
+    pipe:'Area = 3.142 \u00d7 (Diameter/2)\u00b2 \u00b7 Volume = Area \u00d7 Height'
+  };
+  document.getElementById('c3-formula').textContent = shape?formulas[shape]:'Choose a shape to begin.';
+  function mm(id){ var v=parseFloat(document.getElementById(id).value); return isNaN(v)?null:v/1000; }
+  var L=mm('ci3-len'),W=mm('ci3-wid'),H=mm('ci3-hgt'),D=mm('ci3-dia');
+  var PI=3.142, area=null;
+  if((shape==='rect'||shape==='box') && L!=null && W!=null) area=L*W;
+  else if(shape==='tri' && L!=null && W!=null) area=L*W/2;
+  else if(isCirc && D!=null){ var r=D/2; area=PI*r*r; }
+  document.getElementById('co3-res').textContent = (area==null)?'\u2014':round3(area)+' m\u00b2';
+  drawC3Shape(shape,{len:document.getElementById('ci3-len').value||null,wid:document.getElementById('ci3-wid').value||null,hgt:document.getElementById('ci3-hgt').value||null,dia:document.getElementById('ci3-dia').value||null});
+  /* volume = area x height; value box dark-grey (disabled) until height entered */
+  var vol = (area!=null && H!=null)? area*H : null;
+  var volEl=document.getElementById('co3-vol');
+  volEl.textContent = (vol==null)?'\u2014':round3(vol)+' m\u00b3';
+  volEl.classList.toggle('c3-off', H==null);
+  /* weight = volume x density; value box dark-grey until height + material */
+  var dens=parseFloat(document.getElementById('ci3-mat').value);
+  var wtEl=document.getElementById('co3-wt');
+  if(vol!=null && !isNaN(dens)){
+    var kg=vol*dens;
+    wtEl.textContent = (kg>=1000)? (Math.round(kg/10)/100)+' t ('+Math.round(kg)+' kg)' : (Math.round(kg*10)/10)+' kg';
+    wtEl.classList.remove('c3-off');
+  } else {
+    wtEl.textContent='\u2014';
+    wtEl.classList.add('c3-off');
+  }
+}
+var C3CONV={
+  lb2kg:[0.4536,' kg'], kg2lb:[2.2046,' lb'], in2cm:[2.54,' cm'], cm2in:[0.3937,' in'],
+  ft2m:[0.3048,' m'], m2ft:[3.2808,' ft'], mi2km:[1.609,' km'], km2mi:[0.6214,' mi'],
+  sqft2sqm:[0.0929,' m\u00b2'], sqm2sqft:[10.7643,' ft\u00b2'], cuft2cum:[0.02832,' m\u00b3'], cum2cuft:[35.3107,' ft\u00b3'],
+  gal2l:[3.785,' L'], l2gal:[0.2642,' gal'], kpa2psi:[0.145,' psi'], psi2kpa:[6.8948,' kPa']
+};
+function calcConv3(){
+  var v=c3num('ci3-cval'), t=document.getElementById('ci3-conv').value, out='\u2014';
+  if(v!=null){
+    var r;
+    if(t==='f2c') r=(v-32)*5/9;
+    else if(t==='c2f') r=v*1.8+32;
+    else { var cf=C3CONV[t]; r=v*cf[0]; }
+    var suf = (t==='f2c')?' \u00b0C':(t==='c2f')?' \u00b0F':(C3CONV[t]?C3CONV[t][1]:'');
+    r=Math.round(r*10000)/10000;
+    out=r+suf;
+  }
+  document.getElementById('co3-conv').textContent=out;
+}
 var calcPage = 1;
 function setCalcPage(n) {
+  if (n < 1) n = 1; if (n > 3) n = 3;
   calcPage = n;
   var track = document.getElementById('calc-track');
-  if (n === 2) { track.classList.add('p2'); } else { track.classList.remove('p2'); }
-  document.getElementById('calc-title').textContent = (n === 2) ? 'LEANING WALL RAKER \u2014 CALCULATOR' : 'SOLID SOLE RAKER \u2014 CALCULATOR';
-  document.getElementById('calc-sub').textContent   = (n === 2) ? 'Angled (leaning) wall \u2014 uses cf table' : 'Refer to pages 121\u2013127 of FOG';
-  document.getElementById('calc-pgno').textContent = n + '/2';
+  track.classList.remove('p2','p3');
+  if (n === 2) track.classList.add('p2');
+  if (n === 3) track.classList.add('p3');
+  var titles = {1:'SOLID SOLE RAKER \u2014 CALCULATOR', 2:'LEANING WALL RAKER \u2014 CALCULATOR', 3:'CALCULATIONS & CONVERSIONS'};
+  var subs   = {1:'Refer to pages 121\u2013127 of FOG', 2:'Angled (leaning) wall \u2014 uses cf table', 3:'Areas, volumes & unit conversions \u2014 FOG p29'};
+  document.getElementById('calc-title').textContent = titles[n];
+  document.getElementById('calc-sub').textContent   = subs[n];
+  document.getElementById('calc-pgno').textContent = n + '/3';
   document.getElementById('calc-dot1').classList.toggle('active', n === 1);
   document.getElementById('calc-dot2').classList.toggle('active', n === 2);
+  document.getElementById('calc-dot3').classList.toggle('active', n === 3);
   document.getElementById('calc-prev').disabled = (n === 1);
-  document.getElementById('calc-next').disabled = (n === 2);
+  document.getElementById('calc-next').disabled = (n === 3);
 }
 
 (function() {
@@ -820,7 +990,7 @@ function setCalcPage(n) {
   track.addEventListener('touchend', function(e) {
     if (x0 === null) return;
     var dx = e.changedTouches[0].clientX - x0;
-    if (Math.abs(dx) > 50) { if (dx < 0) setCalcPage(2); else setCalcPage(1); }
+    if (Math.abs(dx) > 50) { setCalcPage(calcPage + (dx < 0 ? 1 : -1)); }
     x0 = null; y0 = null; horiz = false;
   }, {passive:true});
 })();
