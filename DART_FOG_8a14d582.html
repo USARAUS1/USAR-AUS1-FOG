@@ -21,18 +21,33 @@
   #app{display:flex;flex-direction:column;height:100%;width:100%;}
   /* toolbar */
   #toolbar{flex-shrink:0;background:#111;border-bottom:2px solid var(--red);
-    display:flex;align-items:center;gap:8px;padding:0 10px;height:52px;
+    display:flex;align-items:center;gap:10px;padding:0 12px;height:52px;
     padding-top:var(--safe-top);height:calc(52px + var(--safe-top));z-index:10;}
   #toc-toggle{background:var(--red);color:#fff;border:none;border-radius:8px;width:42px;height:36px;
     font-size:18px;cursor:pointer;flex-shrink:0;}
+  #oncall-btn{display:inline-flex;align-items:center;gap:7px;border:none;border-radius:18px;height:36px;
+    padding:0 13px 0 11px;font-size:12px;font-weight:800;color:#fff;cursor:pointer;flex-shrink:0;
+    white-space:nowrap;letter-spacing:0.3px;line-height:1;}
+  #oncall-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;background:#fff;
+    box-shadow:0 0 0 2px rgba(255,255,255,0.35);}
+  #oncall-btn.on{background:linear-gradient(180deg,#25a14a,#178038);
+    box-shadow:0 2px 6px rgba(21,128,56,0.45), inset 0 1px 0 rgba(255,255,255,0.25);}
+  #oncall-btn.on #oncall-dot{background:#8effb0;box-shadow:0 0 6px #4dff88,0 0 0 2px rgba(255,255,255,0.3);}
+  #oncall-btn.off{background:linear-gradient(180deg,#d0483a,#a5271c);
+    box-shadow:0 2px 6px rgba(165,39,28,0.45), inset 0 1px 0 rgba(255,255,255,0.2);}
+  #oncall-btn.off #oncall-dot{background:#ffb3aa;box-shadow:0 0 4px rgba(255,120,110,0.8),0 0 0 2px rgba(255,255,255,0.25);}
   #home-btn{background:var(--red);color:#fff;border:none;border-radius:10px;width:58px;height:42px;
     cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
   #home-btn:active,#toc-toggle:active{background:#a00000;}
   .tb-spacer{flex:1;}
 #toolbar{position:relative;}
-#calc-btn{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);}
-  #calc-btn{background:#555;color:#eee;border:none;border-radius:8px;height:36px;padding:0 12px;
-    font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0;}
+
+  #calc-btn{display:inline-flex;align-items:center;gap:7px;border:none;border-radius:18px;height:36px;
+    padding:0 15px;font-size:12px;font-weight:800;color:#fff;cursor:pointer;flex-shrink:0;white-space:nowrap;
+    letter-spacing:0.3px;line-height:1;background:linear-gradient(180deg,#5b6470,#3c434d);
+    box-shadow:0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.18);
+    transition:transform .12s ease;-webkit-tap-highlight-color:transparent;}
+  #calc-btn:active{transform:scale(0.95);}
   #share-btn{background:var(--red);color:#fff;border:none;border-radius:8px;height:36px;width:42px;
     font-size:16px;cursor:pointer;flex-shrink:0;}
   /* stage / page viewer */
@@ -201,6 +216,7 @@ tr.imm-red td{background:#fdeaea;color:#a00000;}
 <div id="app">
   <div id="toolbar">
     <button id="toc-toggle" onclick="openToc()">&#9776;</button>
+    <span id="oncall-btn"><span id="oncall-dot"></span><span id="oncall-lbl">&#8212;</span></span>
     <div class="tb-spacer"></div>
     <button id="calc-btn" onclick="openCalc()">Calculators</button>
     <button id="share-btn" onclick="openShare()">&#8599;</button>
@@ -333,7 +349,7 @@ tr.imm-red td{background:#fdeaea;color:#a00000;}
       <div class="calc-step-title">Area &amp; volume</div>
       <table class="calc-table">
         <tr><td>Shape</td><td style="text-align:center;"><select id="ci3-shape" onchange="calcCompute3()" style="text-align:center;text-align-last:center;margin:0 auto;display:block;width:auto;"><option value="" selected>Choose shape</option><option value="rect">Square / Cube</option><option value="tri">Triangle / Prism</option><option value="circ">Circle / Cylinder</option></select></td></tr>
-        <tr><td>Material</td><td style="text-align:center;"><select id="ci3-mat" onchange="calcCompute3()" style="text-align:center;text-align-last:center;margin:0 auto;display:block;width:auto;"><option value="" selected>Choose</option><option value="2500">Reinforced concrete</option><option value="2000">Masonry</option><option value="600">Wood</option><option value="8000">Steel</option><option value="1000">Water</option><option value="1600">Soil &ndash; average (approx.)</option><option value="1800">Soil &ndash; moist (approx.)</option><option value="2000">Soil &ndash; wet (approx.)</option></select></td></tr>
+        <tr><td>Material</td><td style="text-align:center;"><select id="ci3-mat" onchange="calcCompute3()" style="text-align:center;text-align-last:center;margin:0 auto;display:block;width:auto;"><option value="" selected>Choose</option><option value="2500">Reinforced concrete &mdash; 2,500 kg/m³</option><option value="2000">Masonry &mdash; 2,000 kg/m³</option><option value="600">Wood &mdash; 600 kg/m³</option><option value="8000">Steel &mdash; 8,000 kg/m³</option><option value="1000">Water &mdash; 1,000 kg/m³</option><option value="1600">Soil, average &mdash; 1,600 kg/m³ (approx.)</option><option value="1800">Soil, moist &mdash; 1,800 kg/m³ (approx.)</option><option value="2000">Soil, wet &mdash; 2,000 kg/m³ (approx.)</option></select></td></tr>
         <tr id="c3-r-dia"><td>Diameter</td><td><span class="c3-inwrap"><input id="ci3-dia" type="number" inputmode="numeric" placeholder="0" min="0" step="10" oninput="calcCompute3()"><span class="c3-unit">mm</span></span></td></tr>
         <tr id="c3-r-len"><td>Length</td><td><span class="c3-inwrap"><input id="ci3-len" type="number" inputmode="numeric" placeholder="0" min="0" step="10" oninput="calcCompute3()"><span class="c3-unit">mm</span></span></td></tr>
         <tr id="c3-r-wid"><td>Width</td><td><span class="c3-inwrap"><input id="ci3-wid" type="number" inputmode="numeric" placeholder="0" min="0" step="10" oninput="calcCompute3()"><span class="c3-unit">mm</span></span></td></tr>
@@ -744,6 +760,14 @@ function clampPan(){
 })();
 
 /* ---------- calculator (ported verbatim) ---------- */
+/* ---------- on-call status button ---------- */
+function onCallAuto(){ var m=new Date().getMonth(); /* 0=Jan */ return (m>=3&&m<=5)||(m>=9&&m<=11); }
+function onCallState(){ return onCallAuto(); }
+function renderOnCall(){ var b=document.getElementById('oncall-btn'); if(!b)return; var on=onCallState();
+  b.className=on?'on':'off';
+  var lbl=document.getElementById('oncall-lbl'); if(lbl) lbl.textContent=on?'On rotation':'Off rotation'; }
+renderOnCall();
+document.addEventListener('visibilitychange',function(){ if(!document.hidden) renderOnCall(); });
 function openCalc() {
   document.getElementById('calc-modal').classList.add('open');
   setCalcPage(1);
