@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="DART FOG">
@@ -169,12 +169,16 @@ tr.imm-red td{background:#fdeaea;color:#a00000;}
   .p39-zone{display:flex;align-items:center;justify-content:center;}
   .p39-pill{display:inline-flex;align-items:center;gap:6px;justify-content:center;background:linear-gradient(180deg,#2b7fff,#0b5ed7);color:#fff;font-weight:700;font-size:11px;letter-spacing:0.2px;border-radius:999px;padding:7px 14px;text-align:center;box-shadow:0 3px 10px rgba(11,94,215,0.5),inset 0 1px 0 rgba(255,255,255,0.35);border:1px solid rgba(255,255,255,0.25);pointer-events:none;line-height:1.2;max-width:96%;white-space:normal;}
   .cc-list{list-style:none;margin:6px 0 0;padding:0;}
-  .cc-item{display:flex;align-items:center;gap:12px;border:1px solid #ccd3da;border-radius:10px;padding:14px 14px;margin-bottom:10px;cursor:pointer;background:#f7f9fb;}
-  .cc-item:active{background:#eef2f6;}
-  .cc-num{flex:0 0 auto;width:28px;height:28px;border-radius:50%;background:#0b5ed7;color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:14px;}
+  .cc-item{display:flex;align-items:center;gap:13px;border:1px solid #6b7787;border-radius:14px;padding:15px 15px;
+  margin-bottom:11px;cursor:pointer;background:#fff;box-shadow:0 1px 3px rgba(16,24,40,0.06);
+  transition:transform .12s ease, box-shadow .2s ease;}
+  .cc-item:active{transform:scale(0.985);box-shadow:0 1px 2px rgba(16,24,40,0.04);background:#f7f9fb;}
+  .cc-num{flex:0 0 auto;width:34px;height:34px;border-radius:10px;background:linear-gradient(180deg,#2b7fff,#0b5ed7);
+  color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:15px;
+  box-shadow:0 2px 6px rgba(11,94,215,0.35);}
   .cc-txt{flex:1;min-width:0;}
-  .cc-txt b{display:block;font-size:15px;color:#111;}
-  .cc-txt span{font-size:12px;color:#666;}
+  .cc-txt b{display:block;font-size:15px;color:#0b1220;font-weight:800;}
+  .cc-txt span{font-size:12px;color:#667085;}
   .cc-chev{flex:0 0 auto;color:#0b5ed7;font-size:20px;font-weight:700;}
 .plink.ribbon-zone{display:flex;align-items:center;justify-content:center;}
 .ribbon-back{display:inline-flex;align-items:center;gap:7px;color:#fff;font-weight:700;font-size:2.05vh;letter-spacing:0.3px;
@@ -185,19 +189,30 @@ tr.imm-red td{background:#fdeaea;color:#a00000;}
   #calc-hdr h2{font-size:14px;font-weight:bold;letter-spacing:0.5px;}
   #calc-hdr p{font-size:11px;color:#aaa;margin-top:2px;}
   #calc-xbtn{background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:8px;width:32px;height:32px;font-size:18px;cursor:pointer;flex-shrink:0;}
-  #calc-body{padding:14px;}
-  .calc-step-title{font-size:15px;font-weight:bold;text-align:center;margin:10px 0 8px;}
-  .calc-table{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:14px;}
-  .calc-table td{border:1px solid #555;padding:8px 10px;vertical-align:middle;}
+  #calc-body{padding:14px;background:#eef1f5;}
+  .calc-step-title{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;
+  color:#0b5ed7;margin:16px 2px 8px;display:flex;align-items:center;gap:8px;}
+  .calc-step-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(11,94,215,0.35),transparent);}
+  .calc-table{width:100%;border-collapse:separate;border-spacing:0;margin-bottom:12px;font-size:14px;
+  background:#fff;border:1.5px solid #5b6675;border-radius:14px;overflow:hidden;
+  box-shadow:0 1px 3px rgba(16,24,40,0.06);}
+  .calc-table td{border:none;border-bottom:1px solid #7a8699;padding:12px 14px;vertical-align:middle;}
+  .calc-table tr:last-child td{border-bottom:none;}
+  .calc-table tr:last-child td{border-bottom:none;}
+  .calc-table td:first-child{color:#475467;font-weight:600;border-right:1px solid #7a8699;width:56%;}
+  .calc-table td:last-child{text-align:center;color:#0b1220;font-weight:700;font-size:15px;}
   .calc-table td:first-child{width:55%;font-weight:500;}
   .calc-table td:last-child{text-align:center;font-weight:600;}
-  .calc-table select,.calc-table input[type=number]{width:100%;border:none;background:transparent;font-size:16px;font-weight:600;text-align:center;color:#000;-webkit-appearance:none;outline:none;padding:0;}
+  .calc-table select,.calc-table input[type=number]{width:3.2em;max-width:90px;border:none;background:transparent;font-size:15px;font-weight:700;
+  text-align:center;color:#0b1220;-webkit-appearance:none;outline:none;padding:0;}
+  .calc-table .c3-inwrap{display:inline-flex;align-items:baseline;justify-content:center;gap:4px;width:auto !important;}
+  .calc-table .c3-unit{color:#0b1220;font-weight:700;font-size:15px;}
   .c3-inwrap{display:inline-flex;align-items:baseline;justify-content:center;gap:4px;width:100%;}
   .c3-inwrap input[type=number]{width:auto;min-width:0;flex:0 1 auto;text-align:right;}
   .c3-unit{color:#555;font-weight:600;font-size:14px;flex:0 0 auto;}
   .calc-out{color:#8b0000;font-size:14px;font-weight:700;}
-  .calc-fixed{color:#555;font-weight:500;}
-  .calc-note-bold{font-size:14px;font-weight:bold;margin:6px 0 14px;line-height:1.4;}
+  .calc-table td.calc-fixed{color:#0b1220;font-weight:700;font-size:15px;text-align:right !important;padding-right:20px;}
+  .calc-note-bold{font-size:13px;font-weight:700;margin:8px 2px 14px;line-height:1.45;color:#475467;}
   #calc-track{display:flex;width:400%;transition:transform .28s ease;touch-action:pan-y;}
   #calc-track.p2{transform:translateX(-25%);}
   #calc-track.p3{transform:translateX(-50%);}
@@ -209,6 +224,40 @@ tr.imm-red td{background:#fdeaea;color:#a00000;}
   .calc-arrow:disabled{opacity:0.3;cursor:default;}
   .calc-dot{width:8px;height:8px;border-radius:50%;background:#ccc;transition:background .2s;}
   td.calc-out.c3-off{background:#555;color:#888;border-radius:4px;}
+
+  /* ---- Calculations & Conversions: polished styling (scoped) ---- */
+  .cc4-sec{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;
+    color:#0b5ed7;margin:16px 2px 8px;display:flex;align-items:center;gap:8px;}
+  .cc4-sec::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(11,94,215,0.35),transparent);}
+  .cc4-card{background:#fff;border:1px solid #6b7787;border-radius:14px;overflow:hidden;
+    box-shadow:0 1px 3px rgba(16,24,40,0.06);margin-bottom:10px;}
+  .cc4-card table{width:100%;border-collapse:collapse;margin:0;font-size:14px;}
+  .cc4-card td{border:none;border-bottom:1px solid #7a8699;padding:12px 14px;vertical-align:middle;}
+  .cc4-card tr:last-child td{border-bottom:none;}
+  .cc4-card td:first-child{color:#475467;font-weight:600;width:46%;border-right:1px solid #7a8699;}
+  .cc4-card input[type=number]{width:100%;border:none;background:transparent;font-size:16px;font-weight:700;
+    text-align:right;color:#0b1220;-webkit-appearance:none;outline:none;padding:0;}
+  .cc4-card .c3-inwrap{display:inline-flex;align-items:baseline;justify-content:flex-end;gap:4px;width:100%;}
+  .cc4-card .c3-unit{color:#98a2b3;font-weight:600;font-size:13px;}
+  .cc4-sel{position:relative;display:block;width:100%;}
+  .cc4-sel select{-webkit-appearance:none !important;appearance:none !important;background:#f5f8fc !important;
+    border:1px solid #d6dfea !important;border-radius:10px !important;padding:9px 34px 9px 12px !important;
+    font-size:14px !important;font-weight:700 !important;color:#0b1220 !important;box-sizing:border-box !important;
+    width:100% !important;display:block !important;margin:0 !important;text-align:left !important;text-align-last:left !important;outline:none !important;}
+  .cc4-sel::after{content:"";position:absolute;right:14px;top:50%;width:8px;height:8px;
+    border-right:2px solid #667085;border-bottom:2px solid #667085;transform:translateY(-70%) rotate(45deg);pointer-events:none;}
+  /* results card */
+  .cc4-results{background:linear-gradient(180deg,#0d1b34,#0b1220);border:none;border-radius:14px;
+    padding:4px 4px;margin:6px 0 4px;box-shadow:0 4px 14px rgba(11,18,32,0.28);}
+  .cc4-results table{width:100%;border-collapse:collapse;}
+  .cc4-results td{border:none;padding:13px 16px;border-bottom:1px solid rgba(255,255,255,0.08);}
+  .cc4-results tr:last-child td{border-bottom:none;}
+  .cc4-results td:first-child{color:#9fb3d1;font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:0.6px;border-right:1px solid rgba(255,255,255,0.18);}
+  .cc4-results td.calc-out{color:#fff;font-size:18px;font-weight:800;text-align:right;background:transparent;}
+  .cc4-results td.calc-out.c3-off{color:#5a6b85;background:transparent;}
+  .cc4-formula{font-size:12px;color:#667085;font-weight:600;text-align:center;margin:2px 0 4px;line-height:1.4;}
+  #c3-shape{margin:10px 0 2px;}
+  .cc4-ref{font-size:12px;font-weight:700;color:#98a2b3;text-align:center;margin:12px 0 2px;}
   .c3-shapewrap{margin:8px 0 2px;text-align:center;}
   .c3-shapewrap svg{width:78%;max-width:250px;height:auto;}
   .calc-dot.active{background:#8b0000;}
@@ -229,6 +278,14 @@ tr.imm-red td{background:#fdeaea;color:#a00000;}
     font-weight:600;cursor:pointer;width:100%;}
   #share-close{background:rgba(255,255,255,.1);color:#fff;border:none;border-radius:12px;padding:13px 0;
     font-size:15px;cursor:pointer;width:100%;}
+  .calc-table select{-webkit-appearance:none;appearance:none;background:#f5f8fc;border:1px solid #d6dfea;
+    border-radius:10px;padding:11px 34px 11px 16px;font-size:15px;font-weight:700;color:#0b1220;
+    box-sizing:border-box;width:100%;min-width:110px;outline:none;text-align:center;text-align-last:center;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 10 10'%3E%3Cpath d='M1 3l4 4 4-4' stroke='%23667085' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 14px center;}
+  .calc-out{color:#a5271c;font-size:15px;font-weight:800;text-align:center;}
+  .calc-table td.calc-out{background:#fff8f0;color:#a5271c;text-align:center;}
+  .cc-list{list-style:none;margin:6px 0 0;padding:0;}
 </style>
 </head>
 <body>
@@ -320,12 +377,12 @@ tr.imm-red td{background:#fdeaea;color:#a00000;}
       <div class="calc-panel">
       <div class="calc-step-title">Step 1. Complete table</div>
       <table class="calc-table">
-        <tr><td>Raker Shore Angle</td><td style="text-align:center;"><select id="ci-ang" onchange="calcCompute()" style="text-align:center;text-align-last:center;margin:0 auto;display:block;width:auto;"><option value="30">30&deg;</option><option value="45" selected>45&deg;</option><option value="60">60&deg;</option></select></td></tr>
-        <tr><td>Insertion Point</td><td><input id="ci-ip" type="number" inputmode="numeric" value="" placeholder="mm" min="0" step="10" oninput="calcCompute()"></td></tr>
+        <tr><td>Raker Shore Angle</td><td style="text-align:center;"><select id="ci-ang" onchange="calcCompute()" style="text-align:center;text-align-last:center;"><option value="30">30&deg;</option><option value="45" selected>45&deg;</option><option value="60">60&deg;</option></select></td></tr>
+        <tr><td>Insertion Point</td><td><span class="c3-inwrap"><input id="ci-ip" type="number" inputmode="numeric" value="" placeholder="0" min="0" step="10" oninput="calcCompute()"><span class="c3-unit">mm</span></span></td></tr>
         <tr><td>Cleat</td><td class="calc-fixed">750 mm</td></tr>
-        <tr><td>Extra *(usually 100mm)</td><td><input id="ci-ex" type="number" inputmode="numeric" value="100" min="0" step="10" oninput="calcCompute()"></td></tr>
-        <tr><td>Sole Plate Height *(usually 100mm)</td><td><input id="ci-sph" type="number" inputmode="numeric" value="100" min="0" step="10" oninput="calcCompute()"></td></tr>
-        <tr><td>Wedges (50mm wedge = 30mm gap)</td><td><select id="ci-wdg" onchange="calcCompute()" style="text-align:center;text-align-last:center;margin:0 auto;display:block;width:auto;"><option value="30" selected>30 mm</option></select></td></tr>
+        <tr><td>Extra *(usually 100mm)</td><td><span class="c3-inwrap"><input id="ci-ex" type="number" inputmode="numeric" value="100" min="0" step="10" oninput="calcCompute()"><span class="c3-unit">mm</span></span></td></tr>
+        <tr><td>Sole Plate Height *(usually 100mm)</td><td><span class="c3-inwrap"><input id="ci-sph" type="number" inputmode="numeric" value="100" min="0" step="10" oninput="calcCompute()"><span class="c3-unit">mm</span></span></td></tr>
+        <tr><td>Wedges (100mm wedge = 80mm gap)</td><td><select id="ci-wdg" onchange="calcCompute()" style="text-align:center;text-align-last:center;"><option value="80" selected>80 mm</option><option value="50">50 mm</option><option value="30">30 mm</option></select></td></tr>
       </table>
       <div class="calc-step-title">Step 2. Calculated values</div>
       <table class="calc-table">
@@ -342,14 +399,14 @@ tr.imm-red td{background:#fdeaea;color:#a00000;}
       <div class="calc-panel">
       <div class="calc-step-title">Step 1. Complete table</div>
       <table class="calc-table">
-        <tr><td>Wall Angle</td><td style="text-align:center;"><select id="ci2-wa" onchange="calcCompute2()" style="text-align:center;text-align-last:center;margin:0 auto;display:block;width:auto;"><option value="1">1&deg;</option><option value="2">2&deg;</option><option value="3">3&deg;</option><option value="4">4&deg;</option><option value="5">5&deg;</option><option value="6" selected>6&deg;</option><option value="7">7&deg;</option><option value="8">8&deg;</option><option value="9">9&deg;</option><option value="10">10&deg;</option><option value="11">11&deg;</option><option value="12">12&deg;</option></select></td></tr>
+        <tr><td>Wall Angle</td><td style="text-align:center;"><select id="ci2-wa" onchange="calcCompute2()" style="text-align:center;text-align-last:center;"><option value="1">1&deg;</option><option value="2">2&deg;</option><option value="3">3&deg;</option><option value="4">4&deg;</option><option value="5">5&deg;</option><option value="6" selected>6&deg;</option><option value="7">7&deg;</option><option value="8">8&deg;</option><option value="9">9&deg;</option><option value="10">10&deg;</option><option value="11">11&deg;</option><option value="12">12&deg;</option></select></td></tr>
         <tr><td>Raker Shore Angle</td><td class="calc-fixed" id="ci2-rsa">&mdash;</td></tr>
         <tr><td>Conversion Factor *(from cf table)</td><td class="calc-fixed" id="ci2-cf">&mdash;</td></tr>
-        <tr><td>Insertion Point</td><td><input id="ci2-ip" type="number" inputmode="numeric" value="" placeholder="mm" min="0" step="10" oninput="calcCompute2()"></td></tr>
+        <tr><td>Insertion Point</td><td><span class="c3-inwrap"><input id="ci2-ip" type="number" inputmode="numeric" value="" placeholder="0" min="0" step="10" oninput="calcCompute2()"><span class="c3-unit">mm</span></span></td></tr>
         <tr><td>Cleat</td><td class="calc-fixed">750 mm</td></tr>
-        <tr><td>Extra *(usually 100mm)</td><td><input id="ci2-ex" type="number" inputmode="numeric" value="100" min="0" step="10" oninput="calcCompute2()"></td></tr>
-        <tr><td>Sole Plate Height *(usually 100mm)</td><td><input id="ci2-sph" type="number" inputmode="numeric" value="100" min="0" step="10" oninput="calcCompute2()"></td></tr>
-        <tr><td>Wedges (50mm wedge = 30mm gap)</td><td><select id="ci2-wdg" onchange="calcCompute2()" style="text-align:center;text-align-last:center;margin:0 auto;display:block;width:auto;"><option value="30" selected>30 mm</option></select></td></tr>
+        <tr><td>Extra *(usually 100mm)</td><td><span class="c3-inwrap"><input id="ci2-ex" type="number" inputmode="numeric" value="100" min="0" step="10" oninput="calcCompute2()"><span class="c3-unit">mm</span></span></td></tr>
+        <tr><td>Sole Plate Height *(usually 100mm)</td><td><span class="c3-inwrap"><input id="ci2-sph" type="number" inputmode="numeric" value="100" min="0" step="10" oninput="calcCompute2()"><span class="c3-unit">mm</span></span></td></tr>
+        <tr><td>Wedges (100mm wedge = 80mm gap)</td><td><select id="ci2-wdg" onchange="calcCompute2()" style="text-align:center;text-align-last:center;"><option value="80" selected>80 mm</option><option value="50">50 mm</option><option value="30">30 mm</option></select></td></tr>
       </table>
       <div class="calc-step-title">Step 2. Calculated values</div>
       <table class="calc-table">
@@ -364,29 +421,30 @@ tr.imm-red td{background:#fdeaea;color:#a00000;}
       <p class="calc-note-bold">*1 Raker = 6 Gussets, 2 Cleats, 1 Wedge Set</p>
       </div>
       <div class="calc-panel">
-      <div class="calc-step-title">Area &amp; volume</div>
-      <table class="calc-table">
-        <tr><td>Shape</td><td style="text-align:center;"><select id="ci3-shape" onchange="calcCompute3()" style="text-align:center;text-align-last:center;margin:0 auto;display:block;width:auto;"><option value="" selected>Choose shape</option><option value="rect">Square / Cube</option><option value="tri">Triangle / Prism</option><option value="circ">Circle / Cylinder</option></select></td></tr>
-        <tr><td>Material</td><td style="text-align:center;"><select id="ci3-mat" onchange="calcCompute3()" style="text-align:center;text-align-last:center;margin:0 auto;display:block;width:auto;"><option value="" selected>Choose</option><option value="2500">Reinforced concrete &mdash; 2,500 kg/m³</option><option value="2000">Masonry &mdash; 2,000 kg/m³</option><option value="600">Wood &mdash; 600 kg/m³</option><option value="8000">Steel &mdash; 8,000 kg/m³</option><option value="1000">Water &mdash; 1,000 kg/m³</option><option value="1600">Soil, average &mdash; 1,600 kg/m³ (approx.)</option><option value="1800">Soil, moist &mdash; 1,800 kg/m³ (approx.)</option><option value="2000">Soil, wet &mdash; 2,000 kg/m³ (approx.)</option></select></td></tr>
+      <div class="cc4-sec">Area &amp; volume</div>
+      <div class="cc4-card"><table>
+        <tr><td>Shape</td><td><span class="cc4-sel"><select id="ci3-shape" onchange="calcCompute3()" style="text-align:center;text-align-last:center;"><option value="" selected>Choose shape</option><option value="rect">Square / Cube</option><option value="tri">Triangle / Prism</option><option value="circ">Circle / Cylinder</option></select></span></td></tr>
+        <tr><td>Material</td><td><span class="cc4-sel"><select id="ci3-mat" onchange="calcCompute3()" style="text-align:center;text-align-last:center;"><option value="" selected>Choose</option><option value="2500">Reinforced concrete &mdash; 2,500 kg/m³</option><option value="2000">Masonry &mdash; 2,000 kg/m³</option><option value="600">Wood &mdash; 600 kg/m³</option><option value="8000">Steel &mdash; 8,000 kg/m³</option><option value="1000">Water &mdash; 1,000 kg/m³</option><option value="1600">Soil, average &mdash; 1,600 kg/m³ (approx.)</option><option value="1800">Soil, moist &mdash; 1,800 kg/m³ (approx.)</option><option value="2000">Soil, wet &mdash; 2,000 kg/m³ (approx.)</option></select></span></td></tr>
         <tr id="c3-r-dia"><td>Diameter</td><td><span class="c3-inwrap"><input id="ci3-dia" type="number" inputmode="numeric" placeholder="0" min="0" step="10" oninput="calcCompute3()"><span class="c3-unit">mm</span></span></td></tr>
         <tr id="c3-r-len"><td>Length</td><td><span class="c3-inwrap"><input id="ci3-len" type="number" inputmode="numeric" placeholder="0" min="0" step="10" oninput="calcCompute3()"><span class="c3-unit">mm</span></span></td></tr>
         <tr id="c3-r-wid"><td>Width</td><td><span class="c3-inwrap"><input id="ci3-wid" type="number" inputmode="numeric" placeholder="0" min="0" step="10" oninput="calcCompute3()"><span class="c3-unit">mm</span></span></td></tr>
         <tr id="c3-r-hgt"><td>Height</td><td><span class="c3-inwrap"><input id="ci3-hgt" type="number" inputmode="numeric" placeholder="0" min="0" step="10" oninput="calcCompute3()"><span class="c3-unit">mm</span></span></td></tr>
-      </table>
-      <table class="calc-table">
+      </table></div>
+      <div class="cc4-sec">Result</div>
+      <div class="cc4-results"><table>
         <tr><td id="c3-out-label">Area</td><td class="calc-out" id="co3-res">&mdash;</td></tr>
         <tr id="c3-vol-row"><td>Volume</td><td class="calc-out" id="co3-vol">&mdash;</td></tr>
         <tr id="c3-wt-row"><td>Weight</td><td class="calc-out" id="co3-wt">&mdash;</td></tr>
-      </table>
+      </table></div>
       <div class="c3-shapewrap" id="c3-shape"></div>
-      <p class="calc-note-bold" id="c3-formula" style="font-weight:600;color:#555;">Length &times; width</p>
-      <div class="calc-step-title">Unit conversion</div>
-      <table class="calc-table">
+      <p class="cc4-formula" id="c3-formula">Length &times; width</p>
+      <div class="cc4-sec">Unit conversion</div>
+      <div class="cc4-card"><table>
         <tr><td>Value</td><td><input id="ci3-cval" type="number" inputmode="decimal" placeholder="enter value" step="any" oninput="calcConv3()"></td></tr>
-        <tr><td>Convert</td><td style="text-align:center;"><select id="ci3-conv" onchange="calcConv3()" style="text-align:center;text-align-last:center;margin:0 auto;display:block;width:auto;"><option value="lb2kg">Pounds &rarr; Kilograms</option><option value="kg2lb">Kilograms &rarr; Pounds</option><option value="in2cm">Inches &rarr; Centimetres</option><option value="cm2in">Centimetres &rarr; Inches</option><option value="ft2m">Feet &rarr; Metres</option><option value="m2ft">Metres &rarr; Feet</option><option value="mi2km">Miles &rarr; Kilometres</option><option value="km2mi">Kilometres &rarr; Miles</option><option value="sqft2sqm">Sq. feet &rarr; Sq. metres</option><option value="sqm2sqft">Sq. metres &rarr; Sq. feet</option><option value="cuft2cum">Cubic feet &rarr; Cubic metres</option><option value="cum2cuft">Cubic metres &rarr; Cubic feet</option><option value="gal2l">US Gallons &rarr; Litres</option><option value="l2gal">Litres &rarr; US Gallons</option><option value="f2c">Degrees F &rarr; Degrees C</option><option value="c2f">Degrees C &rarr; Degrees F</option><option value="kpa2psi">Pressure kPa &rarr; Psi</option><option value="psi2kpa">Pressure Psi &rarr; kPa</option></select></td></tr>
-        <tr><td id="c3-conv-label">Result</td><td class="calc-out" id="co3-conv">&mdash;</td></tr>
-      </table>
-      <p class="calc-note-bold">Reference: FOG p28&ndash;29 Calculations &amp; Conversions.</p>
+        <tr><td>Convert</td><td><span class="cc4-sel"><select id="ci3-conv" onchange="calcConv3()" style="text-align:center;text-align-last:center;"><option value="lb2kg">Pounds &rarr; Kilograms</option><option value="kg2lb">Kilograms &rarr; Pounds</option><option value="in2cm">Inches &rarr; Centimetres</option><option value="cm2in">Centimetres &rarr; Inches</option><option value="ft2m">Feet &rarr; Metres</option><option value="m2ft">Metres &rarr; Feet</option><option value="mi2km">Miles &rarr; Kilometres</option><option value="km2mi">Kilometres &rarr; Miles</option><option value="sqft2sqm">Sq. feet &rarr; Sq. metres</option><option value="sqm2sqft">Sq. metres &rarr; Sq. feet</option><option value="cuft2cum">Cubic feet &rarr; Cubic metres</option><option value="cum2cuft">Cubic metres &rarr; Cubic feet</option><option value="gal2l">US Gallons &rarr; Litres</option><option value="l2gal">Litres &rarr; US Gallons</option><option value="f2c">Degrees F &rarr; Degrees C</option><option value="c2f">Degrees C &rarr; Degrees F</option><option value="kpa2psi">Pressure kPa &rarr; Psi</option><option value="psi2kpa">Pressure Psi &rarr; kPa</option></select></span></td></tr>
+        <tr><td id="c3-conv-label">Result</td><td class="calc-out cc4-convout" id="co3-conv">&mdash;</td></tr>
+      </table></div>
+      <p class="cc4-ref">Reference &middot; FOG p28&ndash;29 Calculations &amp; Conversions</p>
       </div>
     </div>
     <div id="calc-nav">
@@ -962,7 +1020,7 @@ function drawC3Shape(shape,dims){
     s+=c3face([flb,frb,frt,flt],c3shade(O,0.85));   /* front */
     s+=c3pill(120,170, dimTxt(L));                  /* length (front bottom) */
     s+=c3pill(48,115,  dimTxt(W));                  /* width -> use left vertical spot */
-    s+=c3pill(170,115, dimTxt(H));                  /* height: centred on right vertical edge */
+    s+=c3pill(206,72, dimTxt(H));                   /* height: top-right corner */
     s+='</svg>';
     } else if(shape==='tri'){
     /* triangular prism: right-triangle cross-section extruded back-right */
