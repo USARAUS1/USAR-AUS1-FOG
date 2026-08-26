@@ -286,6 +286,9 @@ tr.imm-red td{background:#fdeaea;color:#a00000;}
   .calc-out{color:#a5271c;font-size:15px;font-weight:800;text-align:center;}
   .calc-table td.calc-out{background:#fff8f0;color:#a5271c;text-align:center;}
   .cc-list{list-style:none;margin:6px 0 0;padding:0;}
+  #update-status{font-size:12px;color:#667085;margin:6px 0 2px;min-height:16px;text-align:center;}
+  #update-status.ok{color:#178038;font-weight:700;}
+  #update-status.err{color:#a5271c;font-weight:700;}
 </style>
 </head>
 <body>
@@ -379,7 +382,7 @@ tr.imm-red td{background:#fdeaea;color:#a00000;}
       <table class="calc-table">
         <tr><td>Raker Shore Angle</td><td style="text-align:center;"><select id="ci-ang" onchange="calcCompute()" style="text-align:center;text-align-last:center;"><option value="30">30&deg;</option><option value="45" selected>45&deg;</option><option value="60">60&deg;</option></select></td></tr>
         <tr><td>Insertion Point</td><td><span class="c3-inwrap"><input id="ci-ip" type="number" inputmode="numeric" value="" placeholder="0" min="0" step="10" oninput="calcCompute()"><span class="c3-unit">mm</span></span></td></tr>
-        <tr><td>Cleat</td><td class="calc-fixed">750 mm</td></tr>
+        <tr><td>Cleat</td><td><span class="c3-inwrap"><input id="ci-cleat" type="number" inputmode="numeric" value="750" min="0" step="10" oninput="calcCompute()"><span class="c3-unit">mm</span></span></td></tr>
         <tr><td>Extra *(usually 100mm)</td><td><span class="c3-inwrap"><input id="ci-ex" type="number" inputmode="numeric" value="100" min="0" step="10" oninput="calcCompute()"><span class="c3-unit">mm</span></span></td></tr>
         <tr><td>Sole Plate Height *(usually 100mm)</td><td><span class="c3-inwrap"><input id="ci-sph" type="number" inputmode="numeric" value="100" min="0" step="10" oninput="calcCompute()"><span class="c3-unit">mm</span></span></td></tr>
         <tr><td>Wedges (100mm wedge = 80mm gap)</td><td><select id="ci-wdg" onchange="calcCompute()" style="text-align:center;text-align-last:center;"><option value="80" selected>80 mm</option><option value="50">50 mm</option><option value="30">30 mm</option></select></td></tr>
@@ -403,7 +406,7 @@ tr.imm-red td{background:#fdeaea;color:#a00000;}
         <tr><td>Raker Shore Angle</td><td class="calc-fixed" id="ci2-rsa">&mdash;</td></tr>
         <tr><td>Conversion Factor *(from cf table)</td><td class="calc-fixed" id="ci2-cf">&mdash;</td></tr>
         <tr><td>Insertion Point</td><td><span class="c3-inwrap"><input id="ci2-ip" type="number" inputmode="numeric" value="" placeholder="0" min="0" step="10" oninput="calcCompute2()"><span class="c3-unit">mm</span></span></td></tr>
-        <tr><td>Cleat</td><td class="calc-fixed">750 mm</td></tr>
+        <tr><td>Cleat</td><td><span class="c3-inwrap"><input id="ci2-cleat" type="number" inputmode="numeric" value="750" min="0" step="10" oninput="calcCompute2()"><span class="c3-unit">mm</span></span></td></tr>
         <tr><td>Extra *(usually 100mm)</td><td><span class="c3-inwrap"><input id="ci2-ex" type="number" inputmode="numeric" value="100" min="0" step="10" oninput="calcCompute2()"><span class="c3-unit">mm</span></span></td></tr>
         <tr><td>Sole Plate Height *(usually 100mm)</td><td><span class="c3-inwrap"><input id="ci2-sph" type="number" inputmode="numeric" value="100" min="0" step="10" oninput="calcCompute2()"><span class="c3-unit">mm</span></span></td></tr>
         <tr><td>Wedges (100mm wedge = 80mm gap)</td><td><select id="ci2-wdg" onchange="calcCompute2()" style="text-align:center;text-align-last:center;"><option value="80" selected>80 mm</option><option value="50">50 mm</option><option value="30">30 mm</option></select></td></tr>
@@ -469,6 +472,8 @@ tr.imm-red td{background:#fdeaea;color:#a00000;}
       <button id="share-copy-btn" onclick="copyShareUrl()">Copy</button>
     </div>
     <button class="share-act" onclick="doNativeShare()">&#8599; Share Link (AirDrop / Messages / Email)</button>
+    <button class="share-act" id="update-btn" onclick="manualUpdate()">&#8635; Check for updates</button>
+    <div id="update-status"></div>
     <button id="share-close" onclick="closeShare()">Close</button>
   </div>
 </div>
@@ -738,12 +743,12 @@ function dpOpen(k){
   var saved=immLoad(), adm=(saved[k]&&saved[k].adm)||isoToday();
   var p=adm.split('-'), y=+p[0], m=+p[1], d=+p[2];
   var nowY=new Date().getFullYear(), yo='';
-  for(var yy=nowY; yy>=nowY-30; yy--) yo+='<option value="'+yy+'">'+yy+'</option>';
+  for(var yy=nowY; yy>=1950; yy--) yo+='<option value="'+yy+'">'+yy+'</option>';
   document.getElementById('dp-y').innerHTML=yo;
   var mo='';
   for(var mm=1;mm<=12;mm++) mo+='<option value="'+mm+'">'+DP_MONTHS[mm-1]+'</option>';
   document.getElementById('dp-m').innerHTML=mo;
-  document.getElementById('dp-y').value=Math.min(Math.max(y,nowY-30),nowY);
+  document.getElementById('dp-y').value=Math.min(Math.max(y,1950),nowY);
   document.getElementById('dp-m').value=m;
   dpRebuildDays();
   document.getElementById('dp-d').value=d;
@@ -893,7 +898,7 @@ function closeCalc() {
 function calcCompute() {
   var iP  = parseFloat(document.getElementById('ci-ip').value)  || 0;
   var ang = parseFloat(document.getElementById('ci-ang').value);
-  var cl  = 750;
+  var cl  = parseFloat(document.getElementById('ci-cleat').value) || 750;
   var ex  = parseFloat(document.getElementById('ci-ex').value)  || 100;
   var spH = parseFloat(document.getElementById('ci-sph').value) || 100;
   var wdg = parseFloat(document.getElementById('ci-wdg').value);
@@ -926,7 +931,7 @@ var WALL_CF = {1:1.402,2:1.389,3:1.377,4:1.364,5:1.351,6:1.338,7:1.325,8:1.312,9
 function calcCompute2() {
   var iP  = parseFloat(document.getElementById('ci2-ip').value)  || 0;
   var wa  = parseInt(document.getElementById('ci2-wa').value, 10);
-  var cl  = 750;
+  var cl  = parseFloat(document.getElementById('ci2-cleat').value) || 750;
   var ex  = parseFloat(document.getElementById('ci2-ex').value)  || 100;
   var spH = parseFloat(document.getElementById('ci2-sph').value) || 100;
   var wdg = parseFloat(document.getElementById('ci2-wdg').value);
@@ -1186,6 +1191,37 @@ markTocActive();
 showVaxBanner();
 if('serviceWorker' in navigator && location.protocol==='https:'){
   navigator.serviceWorker.register('sw.js').catch(function(){});
+  /* weekly auto-check: only refresh the cached app about once a week */
+  try{
+    var WEEK=7*24*60*60*1000, last=parseInt(localStorage.getItem('fogLastUpdate')||'0',10);
+    if(Date.now()-last > WEEK){ setTimeout(function(){ runUpdate(true); }, 4000); }
+  }catch(e){}
+}
+function updateAssets(){ return [location.href, 'sw.js', 'icon.png']; }
+function runUpdate(silent){
+  return new Promise(function(resolve){
+    if(!('serviceWorker' in navigator) || !navigator.serviceWorker.controller){ resolve(false); return; }
+    var ch=new MessageChannel();
+    ch.port1.onmessage=function(ev){
+      var ok=ev.data && ev.data.ok;
+      try{ localStorage.setItem('fogLastUpdate', String(Date.now())); }catch(e){}
+      /* also refresh the sw.js registration */
+      navigator.serviceWorker.getRegistration().then(function(r){ if(r) r.update(); });
+      resolve(ok);
+    };
+    navigator.serviceWorker.controller.postMessage({type:'UPDATE', urls:updateAssets()},[ch.port2]);
+  });
+}
+function manualUpdate(){
+  var s=document.getElementById('update-status'); if(!s) return;
+  s.className=''; s.textContent='Checking\u2026';
+  if(!('serviceWorker' in navigator) || !navigator.serviceWorker.controller){
+    s.className='err'; s.textContent='Update needs the app to be online and installed.'; return;
+  }
+  runUpdate(false).then(function(ok){
+    if(ok){ s.className='ok'; s.textContent='Updated \u2014 reloading\u2026'; setTimeout(function(){ location.reload(); },900); }
+    else { s.className=''; s.textContent='You\u2019re on the latest version.'; }
+  });
 }
 </script>
 </body>

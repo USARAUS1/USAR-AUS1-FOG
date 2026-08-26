@@ -1,8 +1,8 @@
-/* DART FOG service worker v5.2
-   HTML (navigations): network-first with 4s timeout -> instant offline fallback to cache,
-   and any completed download always refreshes the cache in the background.
-   Other requests (icon etc.): cache-first with background revalidate. */
-var CACHE = 'dart-fog-v5.2';
+/* DART FOG service worker v6.0
+   Strategy: cache-first for everything (instant open, offline, NO per-open download).
+   Updates happen only when the page asks (weekly auto-check or manual "Update" button),
+   via a postMessage the page sends; the SW then fetches fresh, updates the cache, and replies. */
+var CACHE = 'dart-fog-v6.0';
 
 self.addEventListener('install', function(e){ self.skipWaiting(); });
 
@@ -15,29 +15,40 @@ self.addEventListener('activate', function(e){
   );
 });
 
+/* cache-first: serve cached instantly; only hit network if not cached yet (first ever load) */
 self.addEventListener('fetch', function(e){
   if (e.request.method !== 'GET') return;
-  var isDoc = e.request.mode === 'navigate' ||
-              (e.request.destination === 'document') ||
-              /\.html($|\?)/.test(e.request.url);
   e.respondWith(
     caches.open(CACHE).then(function(c){
       return c.match(e.request).then(function(hit){
-        // network fetch always updates the cache when it completes
-        var net = fetch(e.request).then(function(r){
+        if (hit) return hit;
+        return fetch(e.request).then(function(r){
           if (r && r.status === 200) c.put(e.request, r.clone());
           return r;
         });
-        if (isDoc) {
-          if (!hit) return net;                       // nothing cached yet
-          // network-first with timeout; cache fallback, download continues in background
-          var timer = new Promise(function(res){ setTimeout(function(){ res(hit); }, 4000); });
-          return Promise.race([net.catch(function(){ return hit; }), timer]);
-        }
-        // non-document: cache-first, revalidate silently
-        net.catch(function(){});
-        return hit || net;
       });
     })
   );
+});
+
+/* forced update: page sends {type:'UPDATE', urls:[...]}; fetch fresh (bypassing HTTP cache),
+   replace in cache, then tell the page whether anything changed */
+self.addEventListener('message', function(e){
+  var data = e.data || {};
+  if (data.type !== 'UPDATE') return;
+  var urls = data.urls || [];
+  var port = e.ports && e.ports[0];
+  caches.open(CACHE).then(function(c){
+    return Promise.all(urls.map(function(u){
+      return fetch(u, { cache: 'reload' }).then(function(r){
+        if (r && r.status === 200) { return c.put(u, r.clone()).then(function(){ return true; }); }
+        return false;
+      }).catch(function(){ return false; });
+    }));
+  }).then(function(results){
+    var ok = results.some(function(x){ return x; });
+    if (port) port.postMessage({ type: 'UPDATE_DONE', ok: ok });
+  }).catch(function(){
+    if (port) port.postMessage({ type: 'UPDATE_DONE', ok: false });
+  });
 });
