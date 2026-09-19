@@ -880,10 +880,7 @@ function resetZoom(){}
 /* ---------- calculator (ported verbatim) ---------- */
 /* ---------- on-call status button ---------- */
 function onCallAuto(){ var m=new Date().getMonth(); /* 0=Jan */ return (m>=3&&m<=5)||(m>=9&&m<=11); }
-/* ONE-OFF OVERRIDE: 'on' forces green, 'off' forces red, null = normal schedule.
-   Set back to null to return to the automatic Apr-Jun / Oct-Dec rotation. */
-var ROTATION_OVERRIDE = 'on';
-function onCallState(){ if(ROTATION_OVERRIDE==='on') return true; if(ROTATION_OVERRIDE==='off') return false; return onCallAuto(); }
+function onCallState(){ return onCallAuto(); }
 function renderOnCall(){ var b=document.getElementById('oncall-btn'); if(!b)return; var on=onCallState();
   b.className=on?'on':'off';
   var lbl=document.getElementById('oncall-lbl'); if(lbl) lbl.textContent=on?'On rotation':'Off rotation'; }
