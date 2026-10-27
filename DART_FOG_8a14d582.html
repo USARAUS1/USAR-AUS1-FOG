@@ -213,7 +213,7 @@ tr.imm-red td{background:#fdeaea;color:#a00000;}
   .calc-out{color:#8b0000;font-size:14px;font-weight:700;}
   .calc-table td.calc-fixed{color:#0b1220;font-weight:700;font-size:15px;text-align:right !important;padding-right:20px;}
   .calc-note-bold{font-size:13px;font-weight:700;margin:8px 2px 14px;line-height:1.45;color:#475467;}
-  #calc-track{display:flex;width:500%;transition:transform .28s ease;touch-action:pan-y;}
+  #calc-track{display:flex;width:500%;transition:transform .28s ease;touch-action:pan-y pinch-zoom;}
   #calc-track.p2{transform:translateX(-20%);}
   #calc-track.p3{transform:translateX(-40%);}
   #calc-track.p4{transform:translateX(-60%);}
@@ -1301,10 +1301,11 @@ function setCalcPage(n) {
   if (!track) return;
   var x0 = null, y0 = null, horiz = false;
   track.addEventListener('touchstart', function(e) {
+    if (e.touches.length > 1) { x0 = null; return; }   /* let pinch-zoom through */
     var t = e.touches[0]; x0 = t.clientX; y0 = t.clientY; horiz = false;
   }, {passive:true});
   track.addEventListener('touchmove', function(e) {
-    if (x0 === null) return;
+    if (x0 === null || e.touches.length > 1) return;    /* don't hijack a pinch */
     var t = e.touches[0]; var dx = t.clientX - x0; var dy = t.clientY - y0;
     if (!horiz && Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) horiz = true;
     if (horiz) e.preventDefault();
