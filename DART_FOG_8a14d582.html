@@ -525,20 +525,16 @@ tr.imm-red td{background:#fdeaea;color:#a00000;}
         <div class="af-handle" id="af-hB" style="left:72%;top:62%">B</div>
         <div id="af-tag" hidden></div>
         <div id="af-zoompill" hidden style="position:absolute;top:10px;right:10px;z-index:4;background:rgba(17,17,17,.7);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:4px 10px;font-size:14px;font-weight:800;color:#8effb0;pointer-events:none;">1.0&times;</div>
-        <div id="af-level" hidden style="position:absolute;top:50%;right:8px;transform:translateY(-50%);flex-direction:column;align-items:center;gap:14px;z-index:4;pointer-events:none;">
-          <div style="position:relative;width:10px;height:104px;background:rgba(17,17,17,.5);border:1px solid rgba(255,255,255,.28);border-radius:6px;">
-            <div style="position:absolute;left:-4px;right:-4px;top:50%;height:2px;background:rgba(255,255,255,.55);"></div>
-            <div id="af-pitch-b" style="position:absolute;left:50%;top:50%;width:15px;height:15px;border-radius:50%;background:#25d07a;box-shadow:0 0 0 2px rgba(0,0,0,.45);transform:translate(-50%,-50%);"></div>
-            <div id="af-pitch-n" style="position:absolute;top:50%;right:16px;transform:translateY(-50%);font-size:11px;font-weight:800;color:#fff;text-shadow:0 1px 2px #000;white-space:nowrap;">0&deg;</div>
-          </div>
-          <div style="position:relative;width:104px;height:10px;background:rgba(17,17,17,.5);border:1px solid rgba(255,255,255,.28);border-radius:6px;">
-            <div style="position:absolute;top:-4px;bottom:-4px;left:50%;width:2px;background:rgba(255,255,255,.55);"></div>
-            <div id="af-roll-b" style="position:absolute;left:50%;top:50%;width:15px;height:15px;border-radius:50%;background:#25d07a;box-shadow:0 0 0 2px rgba(0,0,0,.45);transform:translate(-50%,-50%);"></div>
-            <div id="af-roll-n" style="position:absolute;left:50%;top:16px;transform:translateX(-50%);font-size:11px;font-weight:800;color:#fff;text-shadow:0 1px 2px #000;white-space:nowrap;">0&deg;</div>
-          </div>
+        <div id="af-level" hidden style="position:absolute;left:12px;bottom:12px;width:92px;height:92px;z-index:4;pointer-events:none;">
+          <div style="position:absolute;inset:0;border-radius:50%;background:rgba(17,17,17,.5);border:1px solid rgba(255,255,255,.3);"></div>
+          <div style="position:absolute;left:50%;top:8%;bottom:8%;width:1px;background:rgba(255,255,255,.35);transform:translateX(-50%);"></div>
+          <div style="position:absolute;top:50%;left:8%;right:8%;height:1px;background:rgba(255,255,255,.35);transform:translateY(-50%);"></div>
+          <div id="af-tgt" style="position:absolute;left:50%;top:50%;width:14px;height:14px;border-radius:50%;border:1.5px solid rgba(255,255,255,.55);transform:translate(-50%,-50%);"></div>
+          <div id="af-bubble" style="position:absolute;left:50%;top:50%;width:16px;height:16px;border-radius:50%;background:#E87B45;box-shadow:0 0 0 2px rgba(0,0,0,.45);transform:translate(-50%,-50%);"></div>
+          <div id="af-lvl-n" style="position:absolute;left:calc(100% + 7px);top:50%;transform:translateY(-50%);font-size:12px;font-weight:800;color:#fff;text-shadow:0 1px 2px #000;white-space:nowrap;">0&deg;</div>
         </div>
         <div id="af-gate">
-          <p>Put <b>A</b> and <b>B</b> along each arm and the <b>&#8736;</b> point on the corner between them. Pinch to zoom; use the right-side levels to line up your phone.</p>
+          <p>Put <b>A</b> and <b>B</b> along each arm and the <b>&#8736;</b> point on the corner between them. Pinch to zoom; use the level target (lower-left) to line up your phone.</p>
           <button class="af-start" onclick="afStart()">Start camera</button>
           <div id="af-gerr" hidden></div>
         </div>
@@ -1210,19 +1206,19 @@ function afStopLevel(){
 }
 function afOnOrient(e){
   var lvl=afEl('af-level'); if(!lvl) return;
-  if(lvl.hidden){ lvl.hidden=false; lvl.style.display='flex'; }
+  if(lvl.hidden){ lvl.hidden=false; lvl.style.display='block'; }
   var beta=(e.beta==null?0:e.beta), gamma=(e.gamma==null?0:e.gamma);
   var roll=gamma, pitch=beta-90;
+  var MAX=20, R=36;
   function cl(x,m){ return Math.max(-m,Math.min(m,x)); }
-  var rb=afEl('af-roll-b'), pb=afEl('af-pitch-b');
-  if(rb) rb.style.transform='translate(-50%,-50%) translateX('+(cl(roll,20)/20*46)+'px)';
-  if(pb) pb.style.transform='translate(-50%,-50%) translateY('+(cl(pitch,20)/20*46)+'px)';
-  var rok=Math.abs(roll)<=1.5, pok=Math.abs(pitch)<=1.5;
-  if(rb) rb.style.background=rok?'#25d07a':'#E87B45';
-  if(pb) pb.style.background=pok?'#25d07a':'#E87B45';
-  var rn=afEl('af-roll-n'), pn=afEl('af-pitch-n');
-  if(rn) rn.textContent=Math.round(roll)+'\u00b0';
-  if(pn) pn.textContent=Math.round(pitch)+'\u00b0';
+  var nx=cl(roll,MAX)/MAX, ny=cl(pitch,MAX)/MAX;
+  var bub=afEl('af-bubble');
+  if(bub) bub.style.transform='translate(-50%,-50%) translate('+(nx*R).toFixed(1)+'px,'+(ny*R).toFixed(1)+'px)';
+  var tilt=Math.hypot(roll,pitch);  /* combined tilt, degrees */
+  var ok=tilt<=4;                   /* green within ~4 deg (looser) */
+  if(bub) bub.style.background=ok?'#25d07a':'#E87B45';
+  var tgt=afEl('af-tgt'); if(tgt) tgt.style.borderColor=ok?'rgba(37,208,122,.95)':'rgba(255,255,255,.55)';
+  var n=afEl('af-lvl-n'); if(n) n.textContent=Math.round(tilt)+'\u00b0';
 }
 function afFreeze(){
   var b=afEl('af-freeze'), v=afEl('af-video'), sh=afEl('af-shot');
