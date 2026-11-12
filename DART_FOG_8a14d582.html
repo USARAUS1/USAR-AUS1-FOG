@@ -524,8 +524,21 @@ tr.imm-red td{background:#fdeaea;color:#a00000;}
         <div class="af-handle" id="af-hA" style="left:50%;top:30%">A</div>
         <div class="af-handle" id="af-hB" style="left:72%;top:62%">B</div>
         <div id="af-tag" hidden></div>
+        <div id="af-zoompill" hidden style="position:absolute;top:10px;right:10px;z-index:4;background:rgba(17,17,17,.7);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:4px 10px;font-size:14px;font-weight:800;color:#8effb0;pointer-events:none;">1.0&times;</div>
+        <div id="af-level" hidden style="position:absolute;top:50%;right:8px;transform:translateY(-50%);flex-direction:column;align-items:center;gap:14px;z-index:4;pointer-events:none;">
+          <div style="position:relative;width:10px;height:104px;background:rgba(17,17,17,.5);border:1px solid rgba(255,255,255,.28);border-radius:6px;">
+            <div style="position:absolute;left:-4px;right:-4px;top:50%;height:2px;background:rgba(255,255,255,.55);"></div>
+            <div id="af-pitch-b" style="position:absolute;left:50%;top:50%;width:15px;height:15px;border-radius:50%;background:#25d07a;box-shadow:0 0 0 2px rgba(0,0,0,.45);transform:translate(-50%,-50%);"></div>
+            <div id="af-pitch-n" style="position:absolute;top:50%;right:16px;transform:translateY(-50%);font-size:11px;font-weight:800;color:#fff;text-shadow:0 1px 2px #000;white-space:nowrap;">0&deg;</div>
+          </div>
+          <div style="position:relative;width:104px;height:10px;background:rgba(17,17,17,.5);border:1px solid rgba(255,255,255,.28);border-radius:6px;">
+            <div style="position:absolute;top:-4px;bottom:-4px;left:50%;width:2px;background:rgba(255,255,255,.55);"></div>
+            <div id="af-roll-b" style="position:absolute;left:50%;top:50%;width:15px;height:15px;border-radius:50%;background:#25d07a;box-shadow:0 0 0 2px rgba(0,0,0,.45);transform:translate(-50%,-50%);"></div>
+            <div id="af-roll-n" style="position:absolute;left:50%;top:16px;transform:translateX(-50%);font-size:11px;font-weight:800;color:#fff;text-shadow:0 1px 2px #000;white-space:nowrap;">0&deg;</div>
+          </div>
+        </div>
         <div id="af-gate">
-          <p>Put <b>A</b> and <b>B</b> along each arm and the <b>&#8736;</b> point on the corner between them.</p>
+          <p>Put <b>A</b> and <b>B</b> along each arm and the <b>&#8736;</b> point on the corner between them. Pinch to zoom; use the right-side levels to line up your phone.</p>
           <button class="af-start" onclick="afStart()">Start camera</button>
           <div id="af-gerr" hidden></div>
         </div>
@@ -1091,7 +1104,7 @@ function wbRender(){
 
 /* ---------- Camera Angle Finder (panel 6) ---------- */
 var afP={ L:{x:0.50,y:0.62}, A:{x:0.50,y:0.30}, B:{x:0.72,y:0.62} };
-var afStream=null, afFrozen=false, afGranted=false, afDrag=null, afOctx=null;
+var afStream=null, afFrozen=false, afGranted=false, afDrag=null, afOctx=null, afTrack=null, afZoomMode=null, afZoomVal=1, afZoomMin=1, afZoomMax=4, afOrient=null;
 function afEl(id){ return document.getElementById(id); }
 function afSize(){
   var st=afEl('af-stage'); if(!st) return null;
@@ -1135,8 +1148,10 @@ function afStart(){
   if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
     gerr.hidden=false; gerr.textContent=(location.protocol==='https:')?'This browser has no camera access.':'Camera needs HTTPS — open the app from its link, not a local file.'; return;
   }
+  afStartLevel();
   navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false})
     .then(function(s){ afStream=s; var v=afEl('af-video'); v.srcObject=s; v.play();
+      afTrack=(s.getVideoTracks&&s.getVideoTracks()[0])||null; afSetupZoom();
       afGranted=true; afEl('af-gate').hidden=true; afEl('af-freeze').hidden=false; afEl('af-readout').hidden=false;
       setTimeout(function(){ afSize(); afPlace(); afDraw(); },80);
     })
@@ -1144,13 +1159,70 @@ function afStart(){
 }
 function afStop(){
   if(afStream){ afStream.getTracks().forEach(function(t){ t.stop(); }); afStream=null; }
-  var v=afEl('af-video'); if(v){ v.srcObject=null; v.style.visibility='visible'; }
+  afTrack=null; afZoomMode=null; afZoomVal=1;
+  var v=afEl('af-video'); if(v){ v.srcObject=null; v.style.visibility='visible'; v.style.transform=''; }
+  afStopLevel(); var zp=afEl('af-zoompill'); if(zp) zp.hidden=true;
   var sh=afEl('af-shot'); if(sh) sh.style.display='none';
   afFrozen=false; var fb=afEl('af-freeze'); if(fb){ fb.textContent='Freeze'; fb.classList.remove('frozen'); }
 }
 function afEnter(){
   afSize(); afPlace(); afDraw();
   if(afGranted && !afStream) afStart();
+}
+function afSetupZoom(){
+  var caps=(afTrack&&afTrack.getCapabilities)?afTrack.getCapabilities():null;
+  if(caps&&caps.zoom&&typeof caps.zoom.max==='number'&&caps.zoom.max>caps.zoom.min){
+    afZoomMode='hw'; afZoomMin=caps.zoom.min; afZoomMax=caps.zoom.max;
+    afZoomVal=(afTrack.getSettings&&afTrack.getSettings().zoom)||caps.zoom.min;
+  } else {
+    afZoomMode='css'; afZoomMin=1; afZoomMax=4; afZoomVal=1;
+  }
+  afApplyZoom(); afZoomPill();
+}
+function afZoomClamp(v){ if(isNaN(v)) v=afZoomMin; return Math.max(afZoomMin,Math.min(afZoomMax,v)); }
+function afZoom(v){ afZoomVal=afZoomClamp(parseFloat(v)); afApplyZoom(); afZoomPill(); }
+function afApplyZoom(){
+  var v=afEl('af-video');
+  if(afZoomMode==='hw'&&afTrack){
+    try{ afTrack.applyConstraints({advanced:[{zoom:afZoomVal}]}); }catch(e){}
+    if(v) v.style.transform='';
+  } else if(v){
+    v.style.transformOrigin='center center'; v.style.transform='scale('+afZoomVal+')';
+  }
+}
+function afZoomPill(){
+  var p=afEl('af-zoompill'); if(!p) return;
+  var mult=(afZoomMin>0)?(afZoomVal/afZoomMin):afZoomVal;
+  if(mult>1.03){ p.textContent=mult.toFixed(1)+'\u00d7'; p.hidden=false; } else { p.hidden=true; }
+}
+function afStartLevel(){
+  if(!window.DeviceOrientationEvent) return;
+  function attach(){ window.addEventListener('deviceorientation',afOnOrient); afOrient=afOnOrient; }
+  try{
+    if(typeof DeviceOrientationEvent.requestPermission==='function'){
+      DeviceOrientationEvent.requestPermission().then(function(st){ if(st==='granted') attach(); }).catch(function(){});
+    } else { attach(); }
+  }catch(e){}
+}
+function afStopLevel(){
+  if(afOrient){ try{ window.removeEventListener('deviceorientation',afOrient); }catch(e){} afOrient=null; }
+  var l=afEl('af-level'); if(l){ l.hidden=true; l.style.display=''; }
+}
+function afOnOrient(e){
+  var lvl=afEl('af-level'); if(!lvl) return;
+  if(lvl.hidden){ lvl.hidden=false; lvl.style.display='flex'; }
+  var beta=(e.beta==null?0:e.beta), gamma=(e.gamma==null?0:e.gamma);
+  var roll=gamma, pitch=beta-90;
+  function cl(x,m){ return Math.max(-m,Math.min(m,x)); }
+  var rb=afEl('af-roll-b'), pb=afEl('af-pitch-b');
+  if(rb) rb.style.transform='translate(-50%,-50%) translateX('+(cl(roll,20)/20*46)+'px)';
+  if(pb) pb.style.transform='translate(-50%,-50%) translateY('+(cl(pitch,20)/20*46)+'px)';
+  var rok=Math.abs(roll)<=1.5, pok=Math.abs(pitch)<=1.5;
+  if(rb) rb.style.background=rok?'#25d07a':'#E87B45';
+  if(pb) pb.style.background=pok?'#25d07a':'#E87B45';
+  var rn=afEl('af-roll-n'), pn=afEl('af-pitch-n');
+  if(rn) rn.textContent=Math.round(roll)+'\u00b0';
+  if(pn) pn.textContent=Math.round(pitch)+'\u00b0';
 }
 function afFreeze(){
   var b=afEl('af-freeze'), v=afEl('af-video'), sh=afEl('af-shot');
@@ -1159,8 +1231,10 @@ function afFreeze(){
     sh.width=Math.round(r.width*d); sh.height=Math.round(r.height*d);
     var sctx=sh.getContext('2d');
     var vw=v.videoWidth, vh=v.videoHeight; if(!vw||!vh) return;
-    var sc=Math.max(sh.width/vw, sh.height/vh), dw=vw*sc, dh=vh*sc, dx=(sh.width-dw)/2, dy=(sh.height-dh)/2;
-    sctx.drawImage(v,dx,dy,dw,dh);
+    var z=(afZoomMode==='css')?afZoomVal:1;
+    var sw=vw/z, shh=vh/z, sx=(vw-sw)/2, sy=(vh-shh)/2;
+    var sc=Math.max(sh.width/sw, sh.height/shh), dw=sw*sc, dh=shh*sc, dx=(sh.width-dw)/2, dy=(sh.height-dh)/2;
+    sctx.drawImage(v,sx,sy,sw,shh,dx,dy,dw,dh);
     sh.style.display='block'; v.style.visibility='hidden';
     afFrozen=true; b.textContent='Live'; b.classList.add('frozen');
   } else {
@@ -1169,23 +1243,40 @@ function afFreeze(){
   }
 }
 function afReset(){ afP={L:{x:0.50,y:0.62},A:{x:0.50,y:0.30},B:{x:0.72,y:0.62}}; afPlace(); afDraw(); }
-/* drag handles */
+/* drag handles + pinch-to-zoom */
 (function(){
+  var st=document.getElementById('af-stage'); if(!st) return;
+  var pts={}, pinch=null;
+  function nkeys(){ return Object.keys(pts); }
+  function dist(){ var a=nkeys(); if(a.length<2) return 0; var p=pts[a[0]],q=pts[a[1]]; return Math.hypot(p.x-q.x,p.y-q.y); }
   ['L','A','B'].forEach(function(k){
     var hnd=document.getElementById('af-h'+k); if(!hnd) return;
-    hnd.addEventListener('pointerdown',function(e){ afDrag=k; try{ hnd.setPointerCapture(e.pointerId); }catch(_){ } e.preventDefault(); e.stopPropagation(); });
-  });
-  var st=document.getElementById('af-stage');
-  if(st){
-    st.addEventListener('pointermove',function(e){
-      if(!afDrag) return;
-      var r=st.getBoundingClientRect();
-      afP[afDrag].x=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));
-      afP[afDrag].y=Math.max(0,Math.min(1,(e.clientY-r.top)/r.height));
-      afPlace(); afDraw(); e.preventDefault();
+    hnd.addEventListener('pointerdown',function(e){
+      if(nkeys().length>0) return; /* a finger is already on the video -> let pinch own it */
+      afDrag=k; try{ hnd.setPointerCapture(e.pointerId); }catch(_){ } e.preventDefault(); e.stopPropagation();
     });
+  });
+  st.addEventListener('pointerdown',function(e){
+    pts[e.pointerId]={x:e.clientX,y:e.clientY};
+    if(nkeys().length===2 && afZoomMode){ afDrag=null; pinch={d0:dist()||1, base:afZoomVal}; }
+  });
+  st.addEventListener('pointermove',function(e){
+    if(pts[e.pointerId]){ pts[e.pointerId].x=e.clientX; pts[e.pointerId].y=e.clientY; }
+    if(pinch && nkeys().length>=2){ var d=dist(); if(d>0) afZoom(pinch.base*(d/pinch.d0)); e.preventDefault(); return; }
+    if(!afDrag) return;
+    var r=st.getBoundingClientRect();
+    afP[afDrag].x=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));
+    afP[afDrag].y=Math.max(0,Math.min(1,(e.clientY-r.top)/r.height));
+    afPlace(); afDraw(); e.preventDefault();
+  });
+  function up(e){
+    if(e && e.pointerId!=null) delete pts[e.pointerId];
+    if(nkeys().length<2) pinch=null;
+    if(nkeys().length===0) afDrag=null;
   }
-  window.addEventListener('pointerup',function(){ afDrag=null; });
+  st.addEventListener('pointerup',up);
+  st.addEventListener('pointercancel',up);
+  window.addEventListener('pointerup',function(){ if(Object.keys(pts).length===0) afDrag=null; });
 })();
 
 function openCalc() {
