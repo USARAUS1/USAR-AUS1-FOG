@@ -1113,6 +1113,10 @@ function afDraw(){
   afOctx.clearRect(0,0,r.width,r.height);
   function pt(k){ return [afP[k].x*r.width, afP[k].y*r.height]; }
   var L=pt('L'),A=pt('A'),B=pt('B');
+  /* fixed vertical reference (90 deg to horizontal) through the vertex */
+  afOctx.save(); afOctx.setLineDash([7,7]); afOctx.lineWidth=2; afOctx.strokeStyle='rgba(255,255,255,.85)';
+  afOctx.beginPath(); afOctx.moveTo(L[0],0); afOctx.lineTo(L[0],r.height); afOctx.stroke();
+  afOctx.setLineDash([]); afOctx.restore();
   afOctx.lineCap='round';
   [[L,A],[L,B]].forEach(function(seg){
     afOctx.strokeStyle='rgba(0,0,0,.55)'; afOctx.lineWidth=7; afLine(seg[0],seg[1]);
