@@ -531,7 +531,6 @@ tr.imm-red td{background:#fdeaea;color:#a00000;}
           <div style="position:absolute;top:50%;left:8%;right:8%;height:1px;background:rgba(255,255,255,.35);transform:translateY(-50%);"></div>
           <div id="af-tgt" style="position:absolute;left:50%;top:50%;width:14px;height:14px;border-radius:50%;border:1.5px solid rgba(255,255,255,.55);transform:translate(-50%,-50%);"></div>
           <div id="af-bubble" style="position:absolute;left:50%;top:50%;width:16px;height:16px;border-radius:50%;background:#E87B45;box-shadow:0 0 0 2px rgba(0,0,0,.45);transform:translate(-50%,-50%);"></div>
-          <div id="af-lvl-n" style="position:absolute;left:calc(100% + 7px);top:50%;transform:translateY(-50%);font-size:12px;font-weight:800;color:#fff;text-shadow:0 1px 2px #000;white-space:nowrap;">0&deg;</div>
         </div>
         <div id="af-gate">
           <p>Put <b>A</b> and <b>B</b> along each arm and the <b>&#8736;</b> point on the corner between them. Pinch to zoom; use the level target (lower-left) to line up your phone.</p>
@@ -1100,7 +1099,7 @@ function wbRender(){
 
 /* ---------- Camera Angle Finder (panel 6) ---------- */
 var afP={ L:{x:0.50,y:0.62}, A:{x:0.50,y:0.30}, B:{x:0.72,y:0.62} };
-var afStream=null, afFrozen=false, afGranted=false, afDrag=null, afOctx=null, afTrack=null, afZoomMode=null, afZoomVal=1, afZoomMin=1, afZoomMax=4, afOrient=null;
+var afStream=null, afFrozen=false, afGranted=false, afDrag=null, afOctx=null, afTrack=null, afZoomMode=null, afZoomVal=1, afZoomMin=1, afZoomMax=4, afOrient=null, afShotZoom=1, afSmR=null, afSmP=null;
 function afEl(id){ return document.getElementById(id); }
 function afSize(){
   var st=afEl('af-stage'); if(!st) return null;
@@ -1155,10 +1154,10 @@ function afStart(){
 }
 function afStop(){
   if(afStream){ afStream.getTracks().forEach(function(t){ t.stop(); }); afStream=null; }
-  afTrack=null; afZoomMode=null; afZoomVal=1;
+  afTrack=null; afZoomMode=null; afZoomVal=1; afShotZoom=1; afSmR=null; afSmP=null;
   var v=afEl('af-video'); if(v){ v.srcObject=null; v.style.visibility='visible'; v.style.transform=''; }
   afStopLevel(); var zp=afEl('af-zoompill'); if(zp) zp.hidden=true;
-  var sh=afEl('af-shot'); if(sh) sh.style.display='none';
+  var sh=afEl('af-shot'); if(sh){ sh.style.display='none'; sh.style.transform=''; }
   afFrozen=false; var fb=afEl('af-freeze'); if(fb){ fb.textContent='Freeze'; fb.classList.remove('frozen'); }
 }
 function afEnter(){
@@ -1176,7 +1175,13 @@ function afSetupZoom(){
   afApplyZoom(); afZoomPill();
 }
 function afZoomClamp(v){ if(isNaN(v)) v=afZoomMin; return Math.max(afZoomMin,Math.min(afZoomMax,v)); }
-function afZoom(v){ afZoomVal=afZoomClamp(parseFloat(v)); afApplyZoom(); afZoomPill(); }
+function afZoom(v){
+  if(afFrozen){
+    afShotZoom=Math.max(1,Math.min(4,parseFloat(v)||1));
+    var sh=afEl('af-shot'); if(sh){ sh.style.transformOrigin='center center'; sh.style.transform='scale('+afShotZoom+')'; }
+  } else { afZoomVal=afZoomClamp(parseFloat(v)); afApplyZoom(); }
+  afZoomPill();
+}
 function afApplyZoom(){
   var v=afEl('af-video');
   if(afZoomMode==='hw'&&afTrack){
@@ -1188,7 +1193,7 @@ function afApplyZoom(){
 }
 function afZoomPill(){
   var p=afEl('af-zoompill'); if(!p) return;
-  var mult=(afZoomMin>0)?(afZoomVal/afZoomMin):afZoomVal;
+  var mult=afFrozen?afShotZoom:((afZoomMin>0)?(afZoomVal/afZoomMin):afZoomVal);
   if(mult>1.03){ p.textContent=mult.toFixed(1)+'\u00d7'; p.hidden=false; } else { p.hidden=true; }
 }
 function afStartLevel(){
@@ -1209,16 +1214,18 @@ function afOnOrient(e){
   if(lvl.hidden){ lvl.hidden=false; lvl.style.display='block'; }
   var beta=(e.beta==null?0:e.beta), gamma=(e.gamma==null?0:e.gamma);
   var roll=gamma, pitch=beta-90;
-  var MAX=20, R=36;
+  var aa=0.15;                      /* low-pass smoothing to calm sensor jitter */
+  afSmR=(afSmR==null)?roll:(afSmR+aa*(roll-afSmR));
+  afSmP=(afSmP==null)?pitch:(afSmP+aa*(pitch-afSmP));
+  roll=afSmR; pitch=afSmP;
+  var MAX=45, R=36;                 /* wider full-scale => bubble moves less per degree */
   function cl(x,m){ return Math.max(-m,Math.min(m,x)); }
   var nx=cl(roll,MAX)/MAX, ny=cl(pitch,MAX)/MAX;
   var bub=afEl('af-bubble');
   if(bub) bub.style.transform='translate(-50%,-50%) translate('+(nx*R).toFixed(1)+'px,'+(ny*R).toFixed(1)+'px)';
-  var tilt=Math.hypot(roll,pitch);  /* combined tilt, degrees */
-  var ok=tilt<=4;                   /* green within ~4 deg (looser) */
+  var ok=Math.hypot(roll,pitch)<=7; /* green within ~7 deg (relaxed) */
   if(bub) bub.style.background=ok?'#25d07a':'#E87B45';
   var tgt=afEl('af-tgt'); if(tgt) tgt.style.borderColor=ok?'rgba(37,208,122,.95)':'rgba(255,255,255,.55)';
-  var n=afEl('af-lvl-n'); if(n) n.textContent=Math.round(tilt)+'\u00b0';
 }
 function afFreeze(){
   var b=afEl('af-freeze'), v=afEl('af-video'), sh=afEl('af-shot');
@@ -1232,10 +1239,11 @@ function afFreeze(){
     var sc=Math.max(sh.width/sw, sh.height/shh), dw=sw*sc, dh=shh*sc, dx=(sh.width-dw)/2, dy=(sh.height-dh)/2;
     sctx.drawImage(v,sx,sy,sw,shh,dx,dy,dw,dh);
     sh.style.display='block'; v.style.visibility='hidden';
-    afFrozen=true; b.textContent='Live'; b.classList.add('frozen');
+    afShotZoom=1; sh.style.transformOrigin='center center'; sh.style.transform='scale(1)';
+    afFrozen=true; b.textContent='Live'; b.classList.add('frozen'); afZoomPill();
   } else {
-    sh.style.display='none'; v.style.visibility='visible';
-    afFrozen=false; b.textContent='Freeze'; b.classList.remove('frozen');
+    sh.style.display='none'; sh.style.transform=''; afShotZoom=1; v.style.visibility='visible';
+    afFrozen=false; b.textContent='Freeze'; b.classList.remove('frozen'); afZoomPill();
   }
 }
 function afReset(){ afP={L:{x:0.50,y:0.62},A:{x:0.50,y:0.30},B:{x:0.72,y:0.62}}; afPlace(); afDraw(); }
@@ -1254,7 +1262,7 @@ function afReset(){ afP={L:{x:0.50,y:0.62},A:{x:0.50,y:0.30},B:{x:0.72,y:0.62}};
   });
   st.addEventListener('pointerdown',function(e){
     pts[e.pointerId]={x:e.clientX,y:e.clientY};
-    if(nkeys().length===2 && afZoomMode){ afDrag=null; pinch={d0:dist()||1, base:afZoomVal}; }
+    if(nkeys().length===2 && afZoomMode){ afDrag=null; pinch={d0:dist()||1, base:(afFrozen?afShotZoom:afZoomVal)}; }
   });
   st.addEventListener('pointermove',function(e){
     if(pts[e.pointerId]){ pts[e.pointerId].x=e.clientX; pts[e.pointerId].y=e.clientY; }
