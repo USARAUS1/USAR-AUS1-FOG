@@ -1099,7 +1099,7 @@ function wbRender(){
 
 /* ---------- Camera Angle Finder (panel 6) ---------- */
 var afP={ L:{x:0.50,y:0.62}, A:{x:0.50,y:0.30}, B:{x:0.72,y:0.62} };
-var afStream=null, afFrozen=false, afGranted=false, afDrag=null, afOctx=null, afTrack=null, afZoomMode=null, afZoomVal=1, afZoomMin=1, afZoomMax=4, afOrient=null, afShotZoom=1, afSmR=null, afSmP=null;
+var afStream=null, afFrozen=false, afGranted=false, afDrag=null, afOctx=null, afTrack=null, afZoomMode=null, afZoomVal=1, afZoomMin=1, afZoomMax=4, afOrient=null, afShotZoom=1, afShotTX=0, afShotTY=0, afSmR=null, afSmP=null;
 function afEl(id){ return document.getElementById(id); }
 function afSize(){
   var st=afEl('af-stage'); if(!st) return null;
@@ -1154,7 +1154,7 @@ function afStart(){
 }
 function afStop(){
   if(afStream){ afStream.getTracks().forEach(function(t){ t.stop(); }); afStream=null; }
-  afTrack=null; afZoomMode=null; afZoomVal=1; afShotZoom=1; afSmR=null; afSmP=null;
+  afTrack=null; afZoomMode=null; afZoomVal=1; afShotZoom=1; afShotTX=0; afShotTY=0; afSmR=null; afSmP=null;
   var v=afEl('af-video'); if(v){ v.srcObject=null; v.style.visibility='visible'; v.style.transform=''; }
   afStopLevel(); var zp=afEl('af-zoompill'); if(zp) zp.hidden=true;
   var sh=afEl('af-shot'); if(sh){ sh.style.display='none'; sh.style.transform=''; }
@@ -1175,10 +1175,24 @@ function afSetupZoom(){
   afApplyZoom(); afZoomPill();
 }
 function afZoomClamp(v){ if(isNaN(v)) v=afZoomMin; return Math.max(afZoomMin,Math.min(afZoomMax,v)); }
+function afApplyShot(){
+  var sh=afEl('af-shot'); if(!sh) return;
+  sh.style.transformOrigin='0 0';
+  sh.style.transform='translate('+afShotTX.toFixed(1)+'px,'+afShotTY.toFixed(1)+'px) scale('+afShotZoom+')';
+}
+function afClampShot(W,H){
+  if(afShotZoom<=1){ afShotTX=0; afShotTY=0; return; }
+  afShotTX=Math.min(0,Math.max(W*(1-afShotZoom),afShotTX));
+  afShotTY=Math.min(0,Math.max(H*(1-afShotZoom),afShotTY));
+}
 function afZoom(v){
   if(afFrozen){
-    afShotZoom=Math.max(1,Math.min(4,parseFloat(v)||1));
-    var sh=afEl('af-shot'); if(sh){ sh.style.transformOrigin='center center'; sh.style.transform='scale('+afShotZoom+')'; }
+    var st=afEl('af-stage'), r=st?st.getBoundingClientRect():{width:0,height:0};
+    var s=Math.max(1,Math.min(4,parseFloat(v)||1));
+    var cx=r.width/2, cy=r.height/2;
+    var ax=(cx-afShotTX)/(afShotZoom||1), ay=(cy-afShotTY)/(afShotZoom||1);
+    afShotZoom=s; afShotTX=cx-s*ax; afShotTY=cy-s*ay;
+    afClampShot(r.width,r.height); afApplyShot();
   } else { afZoomVal=afZoomClamp(parseFloat(v)); afApplyZoom(); }
   afZoomPill();
 }
@@ -1240,10 +1254,10 @@ function afFreeze(){
     var sc=Math.max(sh.width/sw, sh.height/shh), dw=sw*sc, dh=shh*sc, dx=(sh.width-dw)/2, dy=(sh.height-dh)/2;
     sctx.drawImage(v,sx,sy,sw,shh,dx,dy,dw,dh);
     sh.style.display='block'; v.style.visibility='hidden';
-    afShotZoom=1; sh.style.transformOrigin='center center'; sh.style.transform='scale(1)';
+    afShotZoom=1; afShotTX=0; afShotTY=0; sh.style.transformOrigin='0 0'; sh.style.transform='translate(0px,0px) scale(1)';
     afFrozen=true; b.textContent='Live'; b.classList.add('frozen'); afZoomPill();
   } else {
-    sh.style.display='none'; sh.style.transform=''; afShotZoom=1; v.style.visibility='visible';
+    sh.style.display='none'; sh.style.transform=''; afShotZoom=1; afShotTX=0; afShotTY=0; v.style.visibility='visible';
     afFrozen=false; b.textContent='Freeze'; b.classList.remove('frozen'); afZoomPill();
   }
 }
@@ -1263,11 +1277,29 @@ function afReset(){ afP={L:{x:0.50,y:0.62},A:{x:0.50,y:0.30},B:{x:0.72,y:0.62}};
   });
   st.addEventListener('pointerdown',function(e){
     pts[e.pointerId]={x:e.clientX,y:e.clientY};
-    if(nkeys().length===2 && afZoomMode){ afDrag=null; pinch={d0:dist()||1, base:(afFrozen?afShotZoom:afZoomVal)}; }
+    if(nkeys().length===2 && afZoomMode){
+      afDrag=null;
+      var r0=st.getBoundingClientRect(), a0=nkeys(), p0=pts[a0[0]], q0=pts[a0[1]];
+      var mx0=(p0.x+q0.x)/2-r0.left, my0=(p0.y+q0.y)/2-r0.top;
+      pinch={d0:dist()||1, base:(afFrozen?afShotZoom:afZoomVal), W:r0.width, H:r0.height};
+      if(afFrozen){ pinch.ax=(mx0-afShotTX)/(afShotZoom||1); pinch.ay=(my0-afShotTY)/(afShotZoom||1); }
+    }
   });
   st.addEventListener('pointermove',function(e){
     if(pts[e.pointerId]){ pts[e.pointerId].x=e.clientX; pts[e.pointerId].y=e.clientY; }
-    if(pinch && nkeys().length>=2){ var d=dist(); if(d>0) afZoom(pinch.base*(d/pinch.d0)); e.preventDefault(); return; }
+    if(pinch && nkeys().length>=2){
+      var d=dist();
+      if(d>0){
+        if(afFrozen){
+          var r2=st.getBoundingClientRect(), a2=nkeys(), p2=pts[a2[0]], q2=pts[a2[1]];
+          var mx=(p2.x+q2.x)/2-r2.left, my=(p2.y+q2.y)/2-r2.top;
+          var s=Math.max(1,Math.min(4,pinch.base*(d/pinch.d0)));
+          afShotZoom=s; afShotTX=mx-s*pinch.ax; afShotTY=my-s*pinch.ay;
+          afClampShot(pinch.W,pinch.H); afApplyShot(); afZoomPill();
+        } else { afZoom(pinch.base*(d/pinch.d0)); }
+      }
+      e.preventDefault(); return;
+    }
     if(!afDrag) return;
     var r=st.getBoundingClientRect();
     afP[afDrag].x=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));
