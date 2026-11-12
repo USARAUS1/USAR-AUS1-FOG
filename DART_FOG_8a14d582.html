@@ -213,12 +213,13 @@ tr.imm-red td{background:#fdeaea;color:#a00000;}
   .calc-out{color:#8b0000;font-size:14px;font-weight:700;}
   .calc-table td.calc-fixed{color:#0b1220;font-weight:700;font-size:15px;text-align:right !important;padding-right:20px;}
   .calc-note-bold{font-size:13px;font-weight:700;margin:8px 2px 14px;line-height:1.45;color:#475467;}
-  #calc-track{display:flex;width:500%;transition:transform .28s ease;touch-action:pan-y pinch-zoom;}
-  #calc-track.p2{transform:translateX(-20%);}
-  #calc-track.p3{transform:translateX(-40%);}
-  #calc-track.p4{transform:translateX(-60%);}
-  #calc-track.p5{transform:translateX(-80%);}
-  .calc-panel{width:20%;flex-shrink:0;box-sizing:border-box;padding:14px;}
+  #calc-track{display:flex;width:600%;transition:transform .28s ease;touch-action:pan-y pinch-zoom;}
+  #calc-track.p2{transform:translateX(-16.6667%);}
+  #calc-track.p3{transform:translateX(-33.3333%);}
+  #calc-track.p4{transform:translateX(-50%);}
+  #calc-track.p5{transform:translateX(-66.6667%);}
+  #calc-track.p6{transform:translateX(-83.3333%);}
+  .calc-panel{width:16.6667%;flex-shrink:0;box-sizing:border-box;padding:14px;}
   #calc-nav{display:flex;align-items:center;justify-content:center;gap:14px;padding:4px 0 12px;border-top:1px solid #eee;}
   .calc-arrow{background:#eee;border:none;border-radius:6px;width:32px;height:28px;font-size:16px;line-height:1;cursor:pointer;color:#333;}
   .calc-arrow:active{background:#ddd;}
@@ -306,6 +307,30 @@ tr.imm-red td{background:#fdeaea;color:#a00000;}
   .wb-chk input{width:22px;height:22px;accent-color:#0b5ed7;}
   #wb-board{background:#fff;border:1px solid #6b7787;border-radius:14px;padding:10px;box-shadow:0 1px 3px rgba(16,24,40,0.06);}
   #wb-board svg{display:block;width:100%;height:auto;}
+
+  /* ---- camera angle finder (panel 6) ---- */
+  #af-stage{position:relative;width:100%;aspect-ratio:3/4;min-height:300px;background:#000;border-radius:14px;overflow:hidden;touch-action:none;border:1px solid #6b7787;}
+  #af-video,#af-shot{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+  #af-shot{display:none;}
+  #af-ov{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;}
+  .af-handle{position:absolute;width:32px;height:32px;margin:-16px 0 0 -16px;border-radius:50%;border:3px solid #fff;
+    display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;
+    box-shadow:0 2px 6px rgba(0,0,0,.6);touch-action:none;z-index:3;}
+  #af-hL{background:#E87B45;} #af-hA{background:#111;} #af-hB{background:#111;}
+  #af-tag{position:absolute;transform:translate(-50%,-50%);background:#178038;color:#fff;font-size:18px;font-weight:800;
+    padding:3px 11px;border-radius:9px;box-shadow:0 2px 8px rgba(0,0,0,.5);pointer-events:none;z-index:2;}
+  .af-readout{position:absolute;left:10px;top:10px;z-index:2;background:rgba(17,17,17,.82);border:1px solid rgba(255,255,255,.2);
+    border-radius:10px;padding:6px 12px;font-size:14px;font-weight:800;color:#fff;}
+  .af-readout b{color:#8effb0;font-size:19px;}
+  #af-gate{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+    padding:22px;text-align:center;z-index:5;background:#0e1116;}
+  #af-gate p{color:#9fb3d1;font-size:14px;margin:0;line-height:1.5;}
+  .af-start{background:linear-gradient(180deg,#25a14a,#178038);border:none;color:#fff;border-radius:12px;padding:14px 24px;font-size:16px;font-weight:800;}
+  #af-gerr{color:#ffb3aa;font-size:13px;}
+  .af-controls{display:flex;gap:10px;margin-top:12px;}
+  .af-controls button{flex:1;background:#eef1f5;border:1px solid #6b7787;border-radius:12px;padding:13px;font-size:15px;font-weight:800;color:#0b1220;}
+  #af-freeze{background:linear-gradient(180deg,#2b7fff,#0b5ed7)!important;color:#fff!important;border:none!important;}
+  #af-freeze.frozen{background:linear-gradient(180deg,#d0483a,#a5271c)!important;}
 </style>
 </head>
 <body>
@@ -391,6 +416,7 @@ tr.imm-red td{background:#fdeaea;color:#a00000;}
         <li class="cc-item" onclick="setCalcPage(3)"><span class="cc-num">2</span><span class="cc-txt"><b>Leaning Wall Raker</b><span>Angled wall &mdash; uses conversion-factor table</span></span><span class="cc-chev">&#8250;</span></li>
         <li class="cc-item" onclick="setCalcPage(4)"><span class="cc-num">3</span><span class="cc-txt"><b>Calculations &amp; Conversions</b><span>Areas, volumes, weights &amp; units &mdash; FOG p28&ndash;29</span></span><span class="cc-chev">&#8250;</span></li>
         <li class="cc-item" onclick="setCalcPage(5)"><span class="cc-num">4</span><span class="cc-txt"><b>Worksite Marking Board</b><span>Build a worksite marking board &mdash; FOG p39</span></span><span class="cc-chev">&#8250;</span></li>
+        <li class="cc-item" onclick="setCalcPage(6)"><span class="cc-num">5</span><span class="cc-txt"><b>Angle Finder</b><span>Measure an angle with the camera</span></span><span class="cc-chev">&#8250;</span></li>
       </ul>
       <p class="calc-note-bold" style="font-weight:600;color:#555;">Swipe or tap to open a calculator.</p>
       </div>
@@ -486,6 +512,29 @@ tr.imm-red td{background:#fdeaea;color:#a00000;}
       <div id="wb-board"></div>
       <p class="cc4-ref">Reference &middot; FOG p39 Worksite Marking System</p>
       </div>
+      <div class="calc-panel">
+      <div class="cc4-sec">Camera angle finder</div>
+      <div id="af-stage">
+        <video id="af-video" playsinline autoplay muted></video>
+        <canvas id="af-shot"></canvas>
+        <canvas id="af-ov"></canvas>
+        <div class="af-readout" id="af-readout" hidden>Angle <b id="af-angVal">&mdash;</b></div>
+        <div class="af-handle" id="af-hL" style="left:50%;top:62%">&#8736;</div>
+        <div class="af-handle" id="af-hA" style="left:50%;top:30%">A</div>
+        <div class="af-handle" id="af-hB" style="left:72%;top:62%">B</div>
+        <div id="af-tag" hidden></div>
+        <div id="af-gate">
+          <p>Put <b>A</b> and <b>B</b> along each arm and the <b>&#8736;</b> point on the corner between them.</p>
+          <button class="af-start" onclick="afStart()">Start camera</button>
+          <div id="af-gerr" hidden></div>
+        </div>
+      </div>
+      <div class="af-controls">
+        <button id="af-freeze" onclick="afFreeze()" hidden>Freeze</button>
+        <button id="af-reset" onclick="afReset()">Reset points</button>
+      </div>
+      <p class="cc4-ref">Measure the angle between two arms &middot; tap Freeze to hold a photo.</p>
+      </div>
     </div>
     <div id="calc-nav">
       <button class="calc-arrow" id="calc-prev" onclick="setCalcPage(calcPage-1)">&#8249;</button>
@@ -494,6 +543,7 @@ tr.imm-red td{background:#fdeaea;color:#a00000;}
       <span class="calc-dot" id="calc-dot3"></span>
       <span class="calc-dot" id="calc-dot4"></span>
       <span class="calc-dot" id="calc-dot5"></span>
+      <span class="calc-dot" id="calc-dot6"></span>
       <button class="calc-arrow" id="calc-next" onclick="setCalcPage(calcPage+1)">&#8250;</button>
     </div>
   </div>
@@ -1038,6 +1088,101 @@ function wbRender(){
   el.innerHTML=s;
 }
 
+/* ---------- Camera Angle Finder (panel 6) ---------- */
+var afP={ L:{x:0.50,y:0.62}, A:{x:0.50,y:0.30}, B:{x:0.72,y:0.62} };
+var afStream=null, afFrozen=false, afGranted=false, afDrag=null, afOctx=null;
+function afEl(id){ return document.getElementById(id); }
+function afSize(){
+  var st=afEl('af-stage'); if(!st) return null;
+  var r=st.getBoundingClientRect(), d=window.devicePixelRatio||1;
+  var ov=afEl('af-ov'); if(ov && r.width){ ov.width=Math.round(r.width*d); ov.height=Math.round(r.height*d); afOctx=ov.getContext('2d'); afOctx.setTransform(d,0,0,d,0,0); }
+  return r;
+}
+function afAngle(){
+  var ax=afP.A.x-afP.L.x, ay=afP.A.y-afP.L.y, bx=afP.B.x-afP.L.x, by=afP.B.y-afP.L.y;
+  var da=Math.hypot(ax,ay), db=Math.hypot(bx,by);
+  if(da<1e-6||db<1e-6) return 0;
+  var c=(ax*bx+ay*by)/(da*db); c=Math.max(-1,Math.min(1,c));
+  return Math.acos(c)*180/Math.PI;
+}
+function afPlace(){ ['L','A','B'].forEach(function(k){ var hnd=afEl('af-h'+k); if(hnd){ hnd.style.left=(afP[k].x*100)+'%'; hnd.style.top=(afP[k].y*100)+'%'; } }); }
+function afLine(p,q){ afOctx.beginPath(); afOctx.moveTo(p[0],p[1]); afOctx.lineTo(q[0],q[1]); afOctx.stroke(); }
+function afDraw(){
+  var r=afSize(); if(!r||!afOctx) return;
+  afOctx.clearRect(0,0,r.width,r.height);
+  function pt(k){ return [afP[k].x*r.width, afP[k].y*r.height]; }
+  var L=pt('L'),A=pt('A'),B=pt('B');
+  afOctx.lineCap='round';
+  [[L,A],[L,B]].forEach(function(seg){
+    afOctx.strokeStyle='rgba(0,0,0,.55)'; afOctx.lineWidth=7; afLine(seg[0],seg[1]);
+    afOctx.strokeStyle='#E87B45'; afOctx.lineWidth=4; afLine(seg[0],seg[1]);
+  });
+  var a1=Math.atan2(A[1]-L[1],A[0]-L[0]), a2=Math.atan2(B[1]-L[1],B[0]-L[0]);
+  var rad=32, d=a2-a1; while(d>Math.PI)d-=2*Math.PI; while(d<-Math.PI)d+=2*Math.PI;
+  afOctx.beginPath(); afOctx.strokeStyle='#8effb0'; afOctx.lineWidth=4; afOctx.arc(L[0],L[1],rad,a1,a1+d,d<0); afOctx.stroke();
+  var val=Math.round(afAngle());
+  var rv=afEl('af-angVal'); if(rv) rv.textContent=val+'°';
+  var tag=afEl('af-tag'); if(tag){ tag.hidden=false; var mid=a1+d/2;
+    tag.style.left=(L[0]+Math.cos(mid)*(rad+32))+'px'; tag.style.top=(L[1]+Math.sin(mid)*(rad+32))+'px'; tag.textContent=val+'°'; }
+}
+function afStart(){
+  var gerr=afEl('af-gerr');
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    gerr.hidden=false; gerr.textContent=(location.protocol==='https:')?'This browser has no camera access.':'Camera needs HTTPS — open the app from its link, not a local file.'; return;
+  }
+  navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false})
+    .then(function(s){ afStream=s; var v=afEl('af-video'); v.srcObject=s; v.play();
+      afGranted=true; afEl('af-gate').hidden=true; afEl('af-freeze').hidden=false; afEl('af-readout').hidden=false;
+      setTimeout(function(){ afSize(); afPlace(); afDraw(); },80);
+    })
+    .catch(function(e){ gerr.hidden=false; gerr.textContent='Camera blocked: '+e.name+'. Allow camera in Safari settings.'; });
+}
+function afStop(){
+  if(afStream){ afStream.getTracks().forEach(function(t){ t.stop(); }); afStream=null; }
+  var v=afEl('af-video'); if(v){ v.srcObject=null; v.style.visibility='visible'; }
+  var sh=afEl('af-shot'); if(sh) sh.style.display='none';
+  afFrozen=false; var fb=afEl('af-freeze'); if(fb){ fb.textContent='Freeze'; fb.classList.remove('frozen'); }
+}
+function afEnter(){
+  afSize(); afPlace(); afDraw();
+  if(afGranted && !afStream) afStart();
+}
+function afFreeze(){
+  var b=afEl('af-freeze'), v=afEl('af-video'), sh=afEl('af-shot');
+  if(!afFrozen){
+    var r=afEl('af-stage').getBoundingClientRect(), d=window.devicePixelRatio||1;
+    sh.width=Math.round(r.width*d); sh.height=Math.round(r.height*d);
+    var sctx=sh.getContext('2d');
+    var vw=v.videoWidth, vh=v.videoHeight; if(!vw||!vh) return;
+    var sc=Math.max(sh.width/vw, sh.height/vh), dw=vw*sc, dh=vh*sc, dx=(sh.width-dw)/2, dy=(sh.height-dh)/2;
+    sctx.drawImage(v,dx,dy,dw,dh);
+    sh.style.display='block'; v.style.visibility='hidden';
+    afFrozen=true; b.textContent='Live'; b.classList.add('frozen');
+  } else {
+    sh.style.display='none'; v.style.visibility='visible';
+    afFrozen=false; b.textContent='Freeze'; b.classList.remove('frozen');
+  }
+}
+function afReset(){ afP={L:{x:0.50,y:0.62},A:{x:0.50,y:0.30},B:{x:0.72,y:0.62}}; afPlace(); afDraw(); }
+/* drag handles */
+(function(){
+  ['L','A','B'].forEach(function(k){
+    var hnd=document.getElementById('af-h'+k); if(!hnd) return;
+    hnd.addEventListener('pointerdown',function(e){ afDrag=k; try{ hnd.setPointerCapture(e.pointerId); }catch(_){ } e.preventDefault(); e.stopPropagation(); });
+  });
+  var st=document.getElementById('af-stage');
+  if(st){
+    st.addEventListener('pointermove',function(e){
+      if(!afDrag) return;
+      var r=st.getBoundingClientRect();
+      afP[afDrag].x=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));
+      afP[afDrag].y=Math.max(0,Math.min(1,(e.clientY-r.top)/r.height));
+      afPlace(); afDraw(); e.preventDefault();
+    });
+  }
+  window.addEventListener('pointerup',function(){ afDrag=null; });
+})();
+
 function openCalc() {
   document.getElementById('calc-modal').classList.add('open');
   setCalcPage(1);
@@ -1045,6 +1190,7 @@ function openCalc() {
   calcCompute2();
 }
 function closeCalc() {
+  try{ afStop(); }catch(e){}
   document.getElementById('calc-modal').classList.remove('open');
 }
 function calcCompute() {
@@ -1278,22 +1424,20 @@ function calcConv3(){
 }
 var calcPage = 1;
 function setCalcPage(n) {
-  if (n < 1) n = 1; if (n > 5) n = 5;
-  calcPage = n;
+  if (n < 1) n = 1; if (n > 6) n = 6;
+  var prev = calcPage; calcPage = n;
   var track = document.getElementById('calc-track');
-  track.classList.remove('p2','p3','p4','p5');
-  if (n === 2) track.classList.add('p2');
-  if (n === 3) track.classList.add('p3');
-  if (n === 4) track.classList.add('p4');
-  if (n === 5) track.classList.add('p5');
-  var titles = {1:'CALCULATORS', 2:'SOLID SOLE RAKER \u2014 CALCULATOR', 3:'LEANING WALL RAKER \u2014 CALCULATOR', 4:'CALCULATIONS & CONVERSIONS', 5:'WORKSITE MARKING BOARD'};
-  var subs   = {1:'Select a calculator', 2:'Refer to pages 121\u2013127 of FOG', 3:'Angled (leaning) wall \u2014 uses cf table', 4:'Areas, volumes & unit conversions \u2014 FOG p28\u201329', 5:'Build a marking board \u2014 FOG p39'};
+  track.classList.remove('p2','p3','p4','p5','p6');
+  if (n>=2) track.classList.add('p'+n);
+  var titles = {1:'CALCULATORS', 2:'SOLID SOLE RAKER \u2014 CALCULATOR', 3:'LEANING WALL RAKER \u2014 CALCULATOR', 4:'CALCULATIONS & CONVERSIONS', 5:'WORKSITE MARKING BOARD', 6:'ANGLE FINDER'};
+  var subs   = {1:'Select a calculator', 2:'Refer to pages 121\u2013127 of FOG', 3:'Angled (leaning) wall \u2014 uses cf table', 4:'Areas, volumes & unit conversions \u2014 FOG p28\u201329', 5:'Build a marking board \u2014 FOG p39', 6:'Measure an angle with the camera'};
   document.getElementById('calc-title').textContent = titles[n];
   document.getElementById('calc-sub').textContent   = subs[n];
-  document.getElementById('calc-pgno').textContent = n + '/5';
-  for (var i=1;i<=5;i++){ document.getElementById('calc-dot'+i).classList.toggle('active', n === i); }
+  document.getElementById('calc-pgno').textContent = n + '/6';
+  for (var i=1;i<=6;i++){ document.getElementById('calc-dot'+i).classList.toggle('active', n === i); }
   document.getElementById('calc-prev').disabled = (n === 1);
-  document.getElementById('calc-next').disabled = (n === 5);
+  document.getElementById('calc-next').disabled = (n === 6);
+  try{ if(prev===6 && n!==6) afStop(); if(n===6) afEnter(); }catch(e){}
 }
 
 (function() {
@@ -1302,6 +1446,7 @@ function setCalcPage(n) {
   var x0 = null, y0 = null, horiz = false;
   track.addEventListener('touchstart', function(e) {
     if (e.touches.length > 1) { x0 = null; return; }   /* let pinch-zoom through */
+    if (e.target && e.target.closest && e.target.closest('#af-stage')) { x0 = null; return; }   /* don't swipe while using the camera stage */
     var t = e.touches[0]; x0 = t.clientX; y0 = t.clientY; horiz = false;
   }, {passive:true});
   track.addEventListener('touchmove', function(e) {
