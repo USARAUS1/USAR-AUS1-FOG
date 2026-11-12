@@ -1212,6 +1212,7 @@ function afStopLevel(){
 function afOnOrient(e){
   var lvl=afEl('af-level'); if(!lvl) return;
   if(lvl.hidden){ lvl.hidden=false; lvl.style.display='block'; }
+  if(afFrozen) return;   /* lock the level in place while the shot is frozen */
   var beta=(e.beta==null?0:e.beta), gamma=(e.gamma==null?0:e.gamma);
   var roll=gamma, pitch=beta-90;
   var aa=0.15;                      /* low-pass smoothing to calm sensor jitter */
